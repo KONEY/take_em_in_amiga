@@ -1,0 +1,51 @@
+Sequence of blocks in OctaMED SS song, by names
+v1.0 - AreXX script by www.KONEY.org 2020
+-----------------------------------------------
+0 0: 
+1 0: 
+2 1: a_1
+3 2: a_2
+4 3: clsdhat
+5 3: clsdhat
+6 4: +Rulante
+7 4: +Rulante
+8 5: Cambio-kick_1
+9 6: cambio - kick2
+10 7: Kontinua
+11 8: Kontinua2
+12 9: Kont rullanecompl_1
+13 10: Konti CAMBIO!
+14 29: Ferryman BatLev KASSONE!
+15 29: Ferryman BatLev KASSONE!
+16 11: Kuasi Levare
+17 11: Kuasi Levare
+18 28: Ferryman BatLev
+19 28: Ferryman BatLev
+20 12: Cambio2_1 CASSAKALANTE
+21 13: cambio2_2 senzakassa
+22 13: cambio2_2 senzakassa
+23 14: Cambio2_3
+24 15: LEVARE completo (claps)
+25 15: LEVARE completo (claps)
+26 15: LEVARE completo (claps)
+27 16: LEVARE completo Cambio
+28 17: COMPLETO2
+29 17: COMPLETO2
+30 17: COMPLETO2
+31 18: completo2 cambio
+32 19: KAssasolo
+33 20: SAle
+34 21: Kassadritta
+35 21: Kassadritta
+36 22: KAssadritta+claps
+37 22: KAssadritta+claps
+38 23: Kasadritta+rullante
+39 24: kassadritta+rullante_cambio
+40 25: FINALE!
+41 25: FINALE!
+42 25: FINALE!
+43 25: FINALE!
+44 26: fine_1
+45 27: Fine2
+46 30: FINE
+-----------------------
