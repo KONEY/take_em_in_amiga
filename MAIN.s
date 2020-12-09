@@ -68,6 +68,12 @@ Demo:	;a4=VBR, a6=Custom Registers Base addr
 	MOVE.W	D0,6(A1)
 	SWAP	D0
 	MOVE.W	D0,2(A1)
+
+	ADDQ.W	#8,A1
+	MOVE.L	#SPRT_SCROLL,D0	; indirizzo dello sprite in d0
+	MOVE.W	D0,6(A1)
+	SWAP	D0
+	MOVE.W	D0,2(A1)
 	; #### Point LOGO sprites
 
 	;---  Call P61_Init  ---
@@ -191,11 +197,6 @@ IsLineEven:	DC.W 0
 KONEY:		DC.L BG1		; INIT BG
 DrawBuffer:	DC.L SCREEN1	; pointers to buffers to be swapped
 ViewBuffer:	DC.L SCREEN2
-SPR_0_POS:	DC.B $7C		; K
-SPR_1_POS:	DC.B $84		; O
-SPR_2_POS:	DC.B $8C		; N
-SPR_3_POS:	DC.B $94		; E
-SPR_4_POS:	DC.B $9C		; Y
 ;**************************************************************
 	SECTION "ChipData",DATA_C	;declared data that must be in chipmem
 ;**************************************************************
@@ -209,23 +210,23 @@ SPRITES:	INCLUDE	"sprite_KONEY.s"
 DUMMY:	DC.L $F0F0F0	
 
 Copper:
-	DC.W $1FC,0	;Slow fetch mode, remove if AGA demo.
-	DC.W $8E,$2C81	;238h display window top, left
-	DC.W $90,$2CC1	;and bottom, right.
-	DC.W $92,$3C	;Standard bitplane dma fetch start
-	DC.W $94,$D4	;and stop for standard screen.
+	DC.W $1FC,0	; Slow fetch mode, remove if AGA demo.
+	DC.W $8E,$2C81	; 238h display window top, left
+	DC.W $90,$2CC1	; and bottom, right.
+	DC.W $92,$3C	; Standard bitplane dma fetch start
+	DC.W $94,$D4	; and stop for standard screen.
 
-	DC.W $106,$0C00	;(AGA compat. if any Dual Playf. mode)
-	DC.W $108,bpl	;bwid-bpl	;modulos
-	DC.W $10A,bpl	;bwid-bpl	;RISULTATO = 80 ?
+	DC.W $106,$0C00	; (AGA compat. if any Dual Playf. mode)
+	DC.W $108,bpl	; bwid-bpl	;modulos
+	DC.W $10A,bpl	; bwid-bpl	;RISULTATO = 80 ?
 
-	DC.W $102,0	;SCROLL REGISTER (AND PLAYFIELD PRI)
-	DC.W $104,0	;BplCon2
+	DC.W $102,0	; SCROLL REGISTER (AND PLAYFIELD PRI)
+	DC.W $104,%0000000000100000	; BPLCON2
 	;DC.W $100,bpls*$1000+$200	;enable bitplanes
 	DC.W $100,%1011001000000100	; BPLCON0 1011 0010 0000 0100
 
 	Palette:	
-	DC.W $0180,$0AAA,$0182,$0FFF,$0184,$0888,$0186,$0666
+	DC.W $0180,$0AAC,$0182,$0CCC,$0184,$0888,$0186,$0666
 	DC.W $0188,$0444,$018A,$0333,$018C,$0222,$018E,$0515
 
 	BplPtrs:	
