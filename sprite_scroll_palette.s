@@ -1,0 +1,5 @@
+
+	SECTION data,DATA
+myData:
+
+	DC.W	$0180,$0000,$0182,$000F,$0184,$0F0F,$0186,$00F0

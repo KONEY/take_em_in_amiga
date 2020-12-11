@@ -14,6 +14,7 @@ bpl=w/16*2	; byte-width of 1 bitplane line (80)
 bwid=bpls*bpl	; byte-width of 1 pixel line (all bpls)
 ;*************
 MODSTART_POS=0	; start music at position # !! MUST BE EVEN FOR 16BIT
+SCROLLFACTOR=8
 ;*************
 
 ;********** Demo **********	; Demo-specific non-startup code below.
@@ -181,21 +182,6 @@ VBint:				; Blank template VERTB interrupt
 
 	RTS
 
-__DUMMY:
-	LEA	DUMMY,A3		; Indirizzo del bitplane destinazione in a3
-	LEA	DUMMY,A2
-	CLR	D6
-	MOVE.B	#40,D6		; RESET D6
-	;ADD.W	#40*115,A3	; POSITIONING
-
-	.loop:			; LOOP KE CICLA LA BITMAP
-	;ADD.W	#15,A3
-	MOVE.L	(A2),(A3)	
-	;ADD.W	#25,A3
-	DBRA	D6,.loop
-
-	RTS
-
 __SCROLL_SPRITE_COLUMN:	
 	MOVEM.L	D0-A6,-(SP)	; SAVE TO STACK
 	BTST.B	#6,DMACONR	; for compatibility
@@ -215,7 +201,7 @@ __SCROLL_SPRITE_COLUMN:
 	MOVE.L	A4,BLTAPTH		; BLTAPT  (fisso alla figura sorgente)
 	SUB.L	#4,A4
 	MOVE.L	A4,BLTDPTH
-	MOVE.W	#(272+10<<6)+%00010101,BLTSIZE ; BLTSIZE (via al blitter !)
+	MOVE.W	#(272+14<<6)+%00010101,BLTSIZE ; BLTSIZE (via al blitter !)
 	; ## MAIN BLIT ####
 	
 	MOVEM.L	(SP)+,D0-A6	; FETCH FROM STACK
@@ -224,9 +210,10 @@ __SCROLL_SPRITE_COLUMN:
 __POPULATE_TXT_BUFFER:
 	MOVEM.L	D0-A6,-(SP)	; SAVE TO STACK
 	MOVE.W	FRAMESINDEX,D7
-	CMP.W	#4,D7
+	CMP.W	#SCROLLFACTOR,D7
 	BNE.W	.SKIP
 	LEA	HIDDEN_BUFFER,A4
+	;ADD.W	#60,A4		; POSITIONING
 	LEA	FONT,A5
 	LEA	TEXT,A6
 	;ADD.W	#bpl/2*(272+10),A4; POSITIONING
@@ -244,11 +231,16 @@ __POPULATE_TXT_BUFFER:
 	MOVE.B	#8-1,D6
 	.LOOP:
 	ADD.W	#2,A4		; POSITIONING
-	MOVE.B	(A5)+,(A4)+
+	;MOVE.B	(A5)+,(A4)+	; COPY NORMAL BITS
+	MOVE.B	(A5)+,D5		; FOR SHIFTING
+	MOVE.B	D5,(A4)+		; FOR SHIFTING
+	LSR.B	#1,D5		; FOR SHIFTING
 	MOVE.B	#%00000000,(A4)+	; WRAPS MORE NICELY?
+	MOVE.B	D5,(A4)		; FOR SHIFTING
 	DBRA	D6,.LOOP
 	ADD.W	#2,A4		; POSITIONING
-	MOVE.B	#%00000000,(A4)	; WRAPS MORE NICELY?
+	MOVE.B	#%00000000,(A4)+
+	MOVE.B	#%00000000,(A4)
 	.SKIP:
 	SUB.W	#1,D7
 	CMP.W	#0,D7
@@ -258,13 +250,13 @@ __POPULATE_TXT_BUFFER:
 	RTS
 	.RESET:
 	ADD.W	#1,TEXTINDEX
-	MOVE.W	#4,D7
-	MOVE.W	D7,FRAMESINDEX	; OTTIMIZZABILE
+	MOVE.W	#SCROLLFACTOR,FRAMESINDEX
 	MOVEM.L	(SP)+,D0-A6	; FETCH FROM STACK
+	RTS
 
 ;********** Fastmem Data **********
 TEXTINDEX:	DC.W 0
-FRAMESINDEX:	DC.W 4
+FRAMESINDEX:	DC.W SCROLLFACTOR
 KONEY:		DC.L BG1		; INIT BG
 DrawBuffer:	DC.L SCREEN1	; pointers to buffers to be swapped
 ViewBuffer:	DC.L SCREEN2
@@ -272,326 +264,39 @@ ViewBuffer:	DC.L SCREEN2
 	SECTION "ChipData",DATA_C	;declared data that must be in chipmem
 ;**************************************************************
 
-BG1:	INCBIN	"klogo_hd.raw"
+BG1:	INCBIN "klogo_hd.raw"
 
-MODULE:	INCBIN	"take_em_in.P61"	; code $9100
+MODULE:	INCBIN "take_em_in.P61"	; code $9100
 
-SPRITES:	INCLUDE	"sprite_KONEY.s"
+SPRITES:	INCLUDE "sprite_KONEY.s"
 
-SPRT_SCROLL:
-	DC.B	$22	; Posizione verticale di inizio sprite (da $2c a $f2)
-	DC.B	$D7	; Posizione orizzontale di inizio sprite (da $40 a $d8)
-	DC.B	$FF	; $50+13=$5d	; posizione verticale di fine sprite
-	DC.B	$03
-	SCROLL_AREA:
-	DC.W	$FFFF,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$FFFF,$FFFF
-	SCROLL_VISIBLE:
-	DC.W	$7777,$FFFF
-	DC.W	$DFDF,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$7777,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$DDDD,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$7777,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$DDDD,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$7777,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$D5D5,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$7777,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$7777,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$5757,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$BFBF,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$BBBB,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$FEFE,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$BBBB,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$EEEE,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$BBBB,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$EAEA,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$BBBB,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$AAAA,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$BBBB,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$AAAA,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$ABAB,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$AAAA,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$AAAA,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$AAAA,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$2A2A,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$AAAA,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$2222,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$AAAA,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$2222,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$8A8A,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$2222,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$8888,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$2222,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$0808,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$2222,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$0202,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$1515,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$1111,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$5555,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$1111,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$4545,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$1111,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$4444,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$1111,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$0404,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$1111,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$1111,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$1010,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$0808,$F7F7
-	DC.W	$0000,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$0000,$FFFF
-	DC.W	$8888,$7777
-	DC.W	$0000,$FFFF
-	DC.W	$2020,$DFDF
-	DC.W	$0000,$FFFF
-	DC.W	$8888,$7777
-	DC.W	$0000,$FFFF
-	DC.W	$2222,$DDDD
-	DC.W	$0000,$FFFF
-	DC.W	$8888,$7777
-	DC.W	$0000,$FFFF
-	DC.W	$2222,$DDDD
-	DC.W	$0000,$FFFF
-	DC.W	$8888,$7777
-	DC.W	$0000,$FFFF
-	DC.W	$2A2A,$D5D5
-	DC.W	$0000,$FFFF
-	DC.W	$8888,$7777
-	DC.W	$0000,$FFFF
-	DC.W	$AAAA,$5555
-	DC.W	$0000,$FFFF
-	DC.W	$8888,$7777
-	DC.W	$0000,$FFFF
-	DC.W	$AAAA,$5555
-	DC.W	$0000,$FFFF
-	DC.W	$A8A8,$5757
-	DC.W	$0000,$FFFF
-	DC.W	$AAAA,$5555
-	DC.W	$0000,$FFFF
-	DC.W	$AAAA,$5555
-	DC.W	$0000,$FFFF
-	DC.W	$AAAA,$5555
-	DC.W	$0000,$FFFF
-	DC.W	$AAAA,$5555
-	DC.W	$4040,$BFBF
-	DC.W	$AAAA,$5555
-	DC.W	$0000,$FFFF
-	DC.W	$AAAA,$5555
-	DC.W	$4444,$BBBB
-	DC.W	$AAAA,$5555
-	DC.W	$0101,$FEFE
-	DC.W	$AAAA,$5555
-	DC.W	$4444,$BBBB
-	DC.W	$AAAA,$5555
-	DC.W	$1111,$EEEE
-	DC.W	$AAAA,$5555
-	DC.W	$4444,$BBBB
-	DC.W	$AAAA,$5555
-	DC.W	$1515,$EAEA
-	DC.W	$AAAA,$5555
-	DC.W	$4444,$BBBB
-	DC.W	$AAAA,$5555
-	DC.W	$5555,$AAAA
-	DC.W	$AAAA,$5555
-	DC.W	$4444,$BBBB
-	DC.W	$AAAA,$5555
-	DC.W	$5555,$AAAA
-	DC.W	$AAAA,$5555
-	DC.W	$5454,$ABAB
-	DC.W	$AAAA,$5555
-	DC.W	$5555,$AAAA
-	DC.W	$AAAA,$5555
-	DC.W	$5555,$AAAA
-	DC.W	$AAAA,$5555
-	DC.W	$5555,$AAAA
-	DC.W	$AAAA,$5555
-	DC.W	$D5D5,$2A2A
-	DC.W	$AAAA,$5555
-	DC.W	$5555,$AAAA
-	DC.W	$AAAA,$5555
-	DC.W	$DDDD,$2222
-	DC.W	$AAAA,$5555
-	DC.W	$5555,$AAAA
-	DC.W	$AAAA,$5555
-	DC.W	$DDDD,$2222
-	DC.W	$AAAA,$5555
-	DC.W	$7575,$8A8A
-	DC.W	$AAAA,$5555
-	DC.W	$DDDD,$2222
-	DC.W	$AAAA,$5555
-	DC.W	$7777,$8888
-	DC.W	$AAAA,$5555
-	DC.W	$DDDD,$2222
-	DC.W	$AAAA,$5555
-	DC.W	$F7F7,$0808
-	DC.W	$AAAA,$5555
-	DC.W	$DDDD,$2222
-	DC.W	$AAAA,$5555
-	DC.W	$FFFF,$0000
-	DC.W	$AAAA,$5555
-	DC.W	$FDFD,$0202
-	DC.W	$AAAA,$5555
-	DC.W	$FFFF,$0000
-	DC.W	$AAAA,$5555
-	DC.W	$FFFF,$0000
-	DC.W	$AAAA,$5555
-	DC.W	$FFFF,$0000
-	DC.W	$EAEA,$1515
-	DC.W	$FFFF,$0000
-	DC.W	$AAAA,$5555
-	DC.W	$FFFF,$0000
-	DC.W	$EEEE,$1111
-	DC.W	$FFFF,$0000
-	DC.W	$AAAA,$5555
-	DC.W	$FFFF,$0000
-	DC.W	$EEEE,$1111
-	DC.W	$FFFF,$0000
-	DC.W	$BABA,$4545
-	DC.W	$FFFF,$0000
-	DC.W	$EEEE,$1111
-	DC.W	$FFFF,$0000
-	DC.W	$BBBB,$4444
-	DC.W	$FFFF,$0000
-	DC.W	$EEEE,$1111
-	DC.W	$FFFF,$0000
-	DC.W	$FBFB,$0404
-	DC.W	$FFFF,$0000
-	DC.W	$EEEE,$1111
-	DC.W	$FFFF,$0000
-	DC.W	$FFFF,$0000
-	DC.W	$FFFF,$0000
-	DC.W	$FFFF,$0000
-	HIDDEN_BUFFER:
-	DC.W	$AAAA,$5555
-	DC.W	$FFFF,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$AAAA,$5555
-	DC.W	$FFFF,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$FFFF,$FFFF
-	DC.W	$BBBB,$4444
-	DC.W	$AAAA,$5555
 
-	DC.W	0,0
+FONT:	DC.L 0,0		; SPACE CHAR
+	INCBIN "scummfnt_8x752.raw",0
+	EVEN
 
-DUMMY:	DC.L $F0F0F0	
-
-FONT:		DC.L 0,0		; SPACE CHAR
-		INCBIN "NOKIA_font.raw",0
-		EVEN
-
-TEXT:	DC.B "WELCOME TO:   ### TAKE'EM IN ###   KONEY'S THIRD AMIGA MUSIC RELEASE!   "
-	DC.B "TECHNO TECHNO TECHNO TECHNO!!!!"
-	DC.B "IT SHOULDN'T BE NECESSARY TO REMIND THAT THIS PIECE OF CRAPPY CODE IS BEST VIEWED "
-	DC.B "ON THE REAL HARDWARE!       "
+TEXT:	DC.B "WELCOME TO:   - TAKE EM IN -   KONEY THIRD AMIGA MUSIC RELEASE !   "
+	DC.B "TECHNO TECHNO TECHNO TECHNO !!!!  "
+	DC.B "AS USUAL IT SHOULD NOT BE NECESSARY TO REMIND THAT THIS PIECE OF "
+	DC.B "CRAPPY CODE IS BEST VIEWED ON THE REAL HARDWARE ! WELL VERTICAL TEXT "
+	DC.B "IS A BIT ODD AS NORMAL RULES DO NOT APPLY LIKE COMMAS AND EXCLAMATION POINTS ! "
 	EVEN
 _TEXT:
 
 Copper:
-	DC.W $1FC,0	; Slow fetch mode, remove if AGA demo.
-	DC.W $8E,$2C81	; 238h display window top, left
-	DC.W $90,$2CC1	; and bottom, right.
-	DC.W $92,$3C	; Standard bitplane dma fetch start
-	DC.W $94,$D4	; and stop for standard screen.
+	DC.W $1FC,0		; Slow fetch mode, remove if AGA demo.
+	DC.W $8E,$2C81		; 238h display window top, left
+	DC.W $90,$2CC1		; and bottom, right.
+	DC.W $92,$3C		; Standard bitplane dma fetch start
+	DC.W $94,$D4		; and stop for standard screen.
 
-	DC.W $106,$0C00	; (AGA compat. if any Dual Playf. mode)
-	DC.W $108,bpl	; bwid-bpl	;modulos
-	DC.W $10A,bpl	; bwid-bpl	;RISULTATO = 80 ?
+	DC.W $106,$0C00		; (AGA compat. if any Dual Playf. mode)
+	DC.W $108,bpl		; bwid-bpl	;modulos
+	DC.W $10A,bpl		; bwid-bpl	;RISULTATO = 80 ?
 
-	DC.W $102,0	; SCROLL REGISTER (AND PLAYFIELD PRI)
+	DC.W $102,0		; SCROLL REGISTER (AND PLAYFIELD PRI)
 	DC.W $104,%0000000000100000	; BPLCON2
-	;DC.W $100,bpls*$1000+$200	;enable bitplanes
+	;DC.W $100,bpls*$1000+$200	; enable bitplanes
 	DC.W $100,%1011001000000100	; BPLCON0 1011 0010 0000 0100
 
 	Palette:	
@@ -613,32 +318,52 @@ Copper:
 	DC.W $F6,0
 
 	SpritePointers:
-	DC.W $120,0,$122,0	; 0
-	DC.W $124,0,$126,0	; 1
-	DC.W $128,0,$12A,0	; 2
-	DC.W $12C,0,$12E,0	; 3
-	DC.W $130,0,$132,0	; 4
-	DC.W $134,0,$136,0	; 5
-	DC.W $138,0,$13A,0	; 6
-	DC.W $13C,0,$13E,0	; 7
+	DC.W $120,0,$122,0 ; 0
+	DC.W $124,0,$126,0 ; 1
+	DC.W $128,0,$12A,0 ; 2
+	DC.W $12C,0,$12E,0 ; 3
+	DC.W $130,0,$132,0 ; 4
+	DC.W $134,0,$136,0 ; 5
+	DC.W $138,0,$13A,0 ; 6
+	DC.W $13C,0,$13E,0 ; 7
 
 	SpriteColors:
 	DC.W $1A6
-	DC.W $FFF	; COLOR0-1
+	DC.W $000	; COLOR0-1
 	DC.W $1AE
-	DC.W $FFF	; COLOR2-3
+	DC.W $000	; COLOR2-3
 	DC.W $1B6
-	DC.W $FFF	; COLOR4-5
-	DC.W $01BE,$00F0,$01BC,$0F0F,$01BA,$000F
+	DC.W $000	; COLOR4-5
+	DC.W $01BE,$0FFF,$01BC,$0000,$01BA,$0AAC
+
+	CopperWaits:
 
 	DC.W $FFFF,$FFFE	;magic value to end copperlist
 _Copper:
+
+SPRT_SCROLL:
+	DC.B $22		; Posizione verticale di inizio sprite (da $2c a $f2)
+	DC.B $D7		; Posizione orizzontale di inizio sprite (da $40 a $d8)
+	DC.B $FF		; $50+13=$5d	; posizione verticale di fine sprite
+	DC.B $03
+;***************************************************************
+	SECTION "ChipBuffers",BSS_C	;BSS doesn't count toward exe size
+;***************************************************************
+
+	SCROLL_AREA:
+	DCB.W 10*2,0
+	SCROLL_VISIBLE:
+	DCB.W 255*2,0
+	HIDDEN_BUFFER:
+	DCB.W 22*2,0
+	SECTION "ChipData",DATA_C	;declared data that must be in chipmem
+	DC.W 0,0
 
 ;***************************************************************
 	SECTION "ChipBuffers",BSS_C	;BSS doesn't count toward exe size
 ;***************************************************************
 
-SCREEN1:		DS.B h*bwid	; Define storage for buffer 1
-SCREEN2:		DS.B h*bwid	; two buffers
+SCREEN1:		DCB.B h*bwid,0	; Define storage for buffer 1
+SCREEN2:		DCB.B h*bwid,0	; two buffers
 
 END
