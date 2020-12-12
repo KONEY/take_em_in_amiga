@@ -44,41 +44,47 @@ Demo:	;a4=VBR, a6=Custom Registers Base addr
 
 	; #### Point LOGO sprites
 	LEA	SpritePointers,A1	; Puntatori in copperlist
-	MOVE.L	#SPRT_K,D0	; indirizzo dello sprite in d0
+	MOVE.L	#SPRT_K,D0	; sprite 0
 	MOVE.W	D0,6(A1)
 	SWAP	D0
 	MOVE.W	D0,2(A1)
 
 	ADDQ.W	#8,A1
-	MOVE.L	#SPRT_O,D0	; indirizzo dello sprite in d0
+	MOVE.L	#SPRT_O,D0	; sprite 1
 	MOVE.W	D0,6(A1)
 	SWAP	D0
 	MOVE.W	D0,2(A1)
 
 	ADDQ.W	#8,A1
-	MOVE.L	#SPRT_N,D0	; indirizzo dello sprite in d0
+	MOVE.L	#SPRT_N,D0	; sprite 2
 	MOVE.W	D0,6(A1)
 	SWAP	D0
 	MOVE.W	D0,2(A1)
 
 	ADDQ.W	#8,A1
-	MOVE.L	#SPRT_Y,D0	; indirizzo dello sprite in d0
+	MOVE.L	#SPRT_E,D0	; sprite 3
 	MOVE.W	D0,6(A1)
 	SWAP	D0
 	MOVE.W	D0,2(A1)
 
 	ADDQ.W	#8,A1
-	MOVE.L	#SPRT_E,D0	; indirizzo dello sprite in d0
+	MOVE.L	#SPRT_Y,D0	; sprite 4
 	MOVE.W	D0,6(A1)
 	SWAP	D0
 	MOVE.W	D0,2(A1)
 
 	ADDQ.W	#8,A1
-	ADDQ.W	#8,A1
-	MOVE.L	#SPRT_SCROLL,D0	; indirizzo dello sprite in d0
+	MOVE.L	#SPRT_SCROLL_2,D0	; sprite 5 SHADOW
 	MOVE.W	D0,6(A1)
 	SWAP	D0
 	MOVE.W	D0,2(A1)
+
+	ADDQ.W	#8,A1
+	MOVE.L	#SPRT_SCROLL,D0	; sprite 6
+	MOVE.W	D0,6(A1)
+	SWAP	D0
+	MOVE.W	D0,2(A1)
+
 	; #### Point LOGO sprites
 
 	;---  Call P61_Init  ---
@@ -139,7 +145,10 @@ MainLoop:
 	;*--- main loop end ---*
 	BTST	#6,$BFE001
 	BNE.S	.DontShowRasterTime
-	MOVE.W	#$0F0,$18E(A6)	; show rastertime left down to $12c
+	MOVEM.L D0-A6,-(SP)
+	JSR P61_End
+	MOVEM.L (SP)+,D0-A6
+	;MOVE.W	#$0F0,$18E(A6)	; show rastertime left down to $12c
 	.DontShowRasterTime:
 	BTST	#2,$DFF016	; POTINP - RMB pressed?
 	BNE.W	MainLoop		; then loop
@@ -192,6 +201,7 @@ __SCROLL_SPRITE_COLUMN:
 	; ## MAIN BLIT ####
 	.mainBlit:
 	LEA	SCROLL_VISIBLE,A4
+	LEA	SCROLL_VISIBLE_2,A5
 	bsr	WaitBlitter
 	MOVE.W	#$FFFF,BLTAFWM		; BLTAFWM lo spiegheremo dopo
 	MOVE.W	#$FFFF,BLTALWM		; BLTALWM lo spiegheremo dopo
@@ -202,6 +212,9 @@ __SCROLL_SPRITE_COLUMN:
 
 	.goBlitter:
 	MOVE.L	A4,BLTAPTH		; BLTAPT  (fisso alla figura sorgente)
+	;MOVE.L	A5,BLTDPTH		; CLONE TO SHADOW
+	;MOVE.W	#(272+14<<6)+%00010101,BLTSIZE ; BLTSIZE (via al blitter !)
+	;bsr	WaitBlitter
 	SUB.L	#4,A4
 	MOVE.L	A4,BLTDPTH
 	MOVE.W	#(272+14<<6)+%00010101,BLTSIZE ; BLTSIZE (via al blitter !)
@@ -216,10 +229,8 @@ __POPULATE_TXT_BUFFER:
 	CMP.W	#SCROLLFACTOR,D7
 	BNE.W	.SKIP
 	LEA	HIDDEN_BUFFER,A4
-	;ADD.W	#60,A4		; POSITIONING
 	LEA	FONT,A5
 	LEA	TEXT,A6
-	;ADD.W	#bpl/2*(272+10),A4; POSITIONING
 	ADD.W	TEXTINDEX,A6
 	CMP.L	#_TEXT-1,A6	; Siamo arrivati all'ultima word della TAB?
 	BNE.S	.PROCEED
@@ -234,16 +245,11 @@ __POPULATE_TXT_BUFFER:
 	MOVE.B	#8-1,D6
 	.LOOP:
 	ADD.W	#2,A4		; POSITIONING
-	;MOVE.B	(A5)+,(A4)+	; COPY NORMAL BITS
-	MOVE.B	(A5)+,D5		; FOR SHIFTING
-	MOVE.B	D5,(A4)+		; FOR SHIFTING
-	LSR.B	#1,D5		; FOR SHIFTING
+	MOVE.B	(A5)+,(A4)+	; COPY NORMAL BITS
 	MOVE.B	#%00000000,(A4)+	; WRAPS MORE NICELY?
-	MOVE.B	D5,(A4)		; FOR SHIFTING
 	DBRA	D6,.LOOP
 	ADD.W	#2,A4		; POSITIONING
-	MOVE.B	#%00000000,(A4)+
-	MOVE.B	#%00000000,(A4)
+	MOVE.B	#%00000000,(A4)	; WRAPS MORE NICELY?
 	.SKIP:
 	SUB.W	#1,D7
 	CMP.W	#0,D7
@@ -279,6 +285,7 @@ FRAMESINDEX:	DC.W SCROLLFACTOR
 ;KONEY:		DC.L BG1		; INIT BG
 DrawBuffer:	DC.L SCREEN1	; pointers to buffers to be swapped
 ViewBuffer:	DC.L SCREEN2
+
 ;**************************************************************
 	SECTION "ChipData",DATA_C	;declared data that must be in chipmem
 ;**************************************************************
@@ -288,7 +295,7 @@ MODULE:	INCBIN "take_em_in.P61"	; code $9100
 SPRITES:	INCLUDE "sprite_KONEY.s"
 
 FONT:	DC.L 0,0		; SPACE CHAR
-	INCBIN "scummfnt_8x752.raw",0
+	INCBIN "cyber_font.raw",0
 	EVEN
 
 TEXT:	DC.B "WELCOME TO:   - TAKE EM IN -   KONEY THIRD AMIGA MUSIC RELEASE !   "
@@ -318,7 +325,7 @@ Copper:
 	DC.W $100,%1011001000000100	; BPLCON0 1011 0010 0000 0100
 
 	Palette:	
-	DC.W $0180,$0AAC,$0182,$0CCC,$0184,$0888,$0186,$0666
+	DC.W $0180,$0AAB,$0182,$0CCB,$0184,$0889,$0186,$0666
 	DC.W $0188,$0444,$018A,$0333,$018C,$0222,$018E,$0515
 
 	BplPtrs:	
@@ -344,44 +351,66 @@ Copper:
 	DC.W $134,0,$136,0 ; 5
 	DC.W $138,0,$13A,0 ; 6
 	DC.W $13C,0,$13E,0 ; 7
+	DC.W $13F,0,$140,0 ; 8
 
 	SpriteColors:
-	DC.W $1A6
-	DC.W $000	; COLOR0-1
-	DC.W $1AE
-	DC.W $000	; COLOR2-3
-	DC.W $1B6
-	DC.W $000	; COLOR4-5
-	DC.W $01BE,$0FFF,$01BC,$0000,$01BA,$0AAC
+	DC.W $1A0,$000
+	DC.W $1A2,$000
+	DC.W $1A4,$000
+	DC.W $1A6,$000
+
+	DC.W $1A8,$000
+	DC.W $1AA,$000
+	DC.W $1AC,$000
+	DC.W $1AE,$000
+
+	DC.W $1B0,$000
+	DC.W $1B2,$FFF
+	DC.W $1B4,$000
+	DC.W $1B6,$000
+
+	DC.W $1B8,$000
+	DC.W $1BA,$111
+	DC.W $1BC,$000
+	DC.W $1BE,$000
 
 	CopperWaits:
 
 	DC.W $FFFF,$FFFE	;magic value to end copperlist
 _Copper:
 
-SPRT_SCROLL:
-	DC.B $22		; Posizione verticale di inizio sprite (da $2c a $f2)
+SPRT_SCROLL_2:
+	DC.B $20		; Posizione verticale di inizio sprite (da $2c a $f2)
 	DC.B $D7		; Posizione orizzontale di inizio sprite (da $40 a $d8)
 	DC.B $FF		; $50+13=$5d	; posizione verticale di fine sprite
 	DC.B $03
-;***************************************************************
 	SECTION "ChipBuffers",BSS_C	;BSS doesn't count toward exe size
-;***************************************************************
-
 	SCROLL_AREA:
 	DCB.W 10*2,0
 	SCROLL_VISIBLE:
 	DCB.W 255*2,0
 	HIDDEN_BUFFER:
 	DCB.W 22*2,0
-	SECTION "ChipData",DATA_C	;declared data that must be in chipmem
+	;SECTION "ChipData",DATA_C	;declared data that must be in chipmem
 	DC.W 0,0
 
-;***************************************************************
 	SECTION "ChipBuffers",BSS_C	;BSS doesn't count toward exe size
-;***************************************************************
-
-;SCREEN1:	DCB.B h*bwid,0	; Define storage for buffer 1
 SCREEN2:	DCB.B h*bwid+bpl,10; two buffers
+
+	SECTION "ChipData",DATA_C	;declared data that must be in chipmem
+SPRT_SCROLL:		; THE SHADOW
+	DC.B $22		; Posizione verticale di inizio sprite (da $2c a $f2)
+	DC.B $D8		; Posizione orizzontale di inizio sprite (da $40 a $d8)
+	DC.B $FF		; $50+13=$5d	; posizione verticale di fine sprite
+	DC.B $03
+	SECTION "ChipBuffers",BSS_C	;BSS doesn't count toward exe size
+	SCROLL_AREA_2:
+	DCB.W 10*2,0
+	SCROLL_VISIBLE_2:
+	DCB.W 255*2,1
+	HIDDEN_BUFFER_2:
+	DCB.W 22*2,0
+	;SECTION "ChipData",DATA_C	;declared data that must be in chipmem
+	DC.W 0,0
 
 END
