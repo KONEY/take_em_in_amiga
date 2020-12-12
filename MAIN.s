@@ -27,17 +27,20 @@ Demo:	;a4=VBR, a6=Custom Registers Base addr
 	MOVE.W	#%1000011111100000,DMACON
 
 	;*--- clear screens ---*
-	lea	SCREEN1,a1
-	bsr.w	ClearScreen
-	lea	SCREEN2,a1
-	bsr.w	ClearScreen
-	bsr	WaitBlitter
+	;lea	SCREEN1,a1
+	;bsr.w	ClearScreen
+	;lea	SCREEN2,a1
+	;bsr.w	ClearScreen
+	;bsr	WaitBlitter
 	;*--- start copper ---*
 	lea	SCREEN1,a0
 	moveq	#bpl,d0
 	lea	BplPtrs+2,a1
 	moveq	#bpls-1,d1
 	bsr.w	PokePtrs
+
+	; #### CPU INTENSIVE TASKS BEFORE STARTING MUSIC
+	JSR	__DUPLICATE_SCREEN
 
 	; #### Point LOGO sprites
 	LEA	SpritePointers,A1	; Puntatori in copperlist
@@ -88,9 +91,9 @@ Demo:	;a4=VBR, a6=Custom Registers Base addr
 	MOVEM.L (SP)+,D0-A6
 	;---  Call P61_Init  ---
 
-	MOVE.L	#Copper,$80(A6)
+	;MOVE.W	#$8000,VPOSW	; RESETS LOF (from EAB)
 
-	MOVE.W	#$8000,VPOSW	; RESETS LOF (from EAB)
+	MOVE.L	#Copper,$80(A6)
 
 ;********************  main loop  ********************
 MainLoop:
@@ -112,17 +115,17 @@ MainLoop:
 	bsr	WaitBlitter
 
 	; ** CODE FOR HI-RES ** FROM Lezione11l6.S ********************
-	MOVE.L	KONEY,D3		; Indirizzo bitplane
-	MOVE.W	VPOSR,D7
-	BTST	#15,D7
-	BNE.S	.skipLine		; Se si, tocca alle linee dispari
-	ADD.L	#bpl,D3		; Oppure aggiungi la lunghezza di una linea
-	.skipLine:
-
+	;MOVE.L	KONEY,D3		; Indirizzo bitplane
+	;MOVE.W	VPOSR,D7
+	;BTST	#15,D7
+	;BNE.S	.skipLine		; Se si, tocca alle linee dispari
+	;ADD.L	#bpl,D3		; Oppure aggiungi la lunghezza di una linea
+	;.skipLine:
 	; ** CODE FOR HI-RES **************************************
-	MOVE.L	D3,DrawBuffer
+	;MOVE.L	D3,DrawBuffer
 	;CLR.W	$100		; DEBUG | w 0 100 2
 	;CLR.W	$100		; THIS IS NEEDED FOR HI-RES... LOL!!
+
 	; do stuff here :)
 
 	BSR.W	__POPULATE_TXT_BUFFER
@@ -136,7 +139,7 @@ MainLoop:
 	;*--- main loop end ---*
 	BTST	#6,$BFE001
 	BNE.S	.DontShowRasterTime
-	MOVE.W	#$0F0,$180(A6)	; show rastertime left down to $12c
+	MOVE.W	#$0F0,$18E(A6)	; show rastertime left down to $12c
 	.DontShowRasterTime:
 	BTST	#2,$DFF016	; POTINP - RMB pressed?
 	BNE.W	MainLoop		; then loop
@@ -254,22 +257,35 @@ __POPULATE_TXT_BUFFER:
 	MOVEM.L	(SP)+,D0-A6	; FETCH FROM STACK
 	RTS
 
+__DUPLICATE_SCREEN:
+	MOVEM.L	D0-A6,-(SP)	; SAVE TO STACK
+	LEA	SCREEN1,A0
+	LEA	SCREEN2,A1
+	ADD.L	#bpl,A1		; Oppure aggiungi la lunghezza di una linea
+	MOVE.L	#h*bpls-1,D1	; LINES
+	.OUTERLOOP:
+	MOVE.L	#w/16-1,D0	; SIZE OF SOURCE IN WORDS
+	.INNERLOOP:
+	MOVE.W	(A0)+,(A1)+
+	DBRA	D0,.INNERLOOP
+	DBRA.W	D1,.OUTERLOOP
+
+	MOVEM.L	(SP)+,D0-A6	; FETCH FROM STACK
+	RTS
+
 ;********** Fastmem Data **********
 TEXTINDEX:	DC.W 0
 FRAMESINDEX:	DC.W SCROLLFACTOR
-KONEY:		DC.L BG1		; INIT BG
+;KONEY:		DC.L BG1		; INIT BG
 DrawBuffer:	DC.L SCREEN1	; pointers to buffers to be swapped
 ViewBuffer:	DC.L SCREEN2
 ;**************************************************************
 	SECTION "ChipData",DATA_C	;declared data that must be in chipmem
 ;**************************************************************
 
-BG1:	INCBIN "klogo_hd.raw"
-
 MODULE:	INCBIN "take_em_in.P61"	; code $9100
 
 SPRITES:	INCLUDE "sprite_KONEY.s"
-
 
 FONT:	DC.L 0,0		; SPACE CHAR
 	INCBIN "scummfnt_8x752.raw",0
@@ -282,6 +298,8 @@ TEXT:	DC.B "WELCOME TO:   - TAKE EM IN -   KONEY THIRD AMIGA MUSIC RELEASE !   "
 	DC.B "IS A BIT ODD AS NORMAL RULES DO NOT APPLY LIKE COMMAS AND EXCLAMATION POINTS ! "
 	EVEN
 _TEXT:
+
+SCREEN1:	INCBIN "klogo_hd.raw"
 
 Copper:
 	DC.W $1FC,0		; Slow fetch mode, remove if AGA demo.
@@ -363,7 +381,7 @@ SPRT_SCROLL:
 	SECTION "ChipBuffers",BSS_C	;BSS doesn't count toward exe size
 ;***************************************************************
 
-SCREEN1:		DCB.B h*bwid,0	; Define storage for buffer 1
-SCREEN2:		DCB.B h*bwid,0	; two buffers
+;SCREEN1:	DCB.B h*bwid,0	; Define storage for buffer 1
+SCREEN2:	DCB.B h*bwid+bpl,10; two buffers
 
 END

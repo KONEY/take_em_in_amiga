@@ -104,7 +104,7 @@ visuctrs	=1	;enables visualizers in this example: P61_visuctr0..3.w
 asmonereport=0	;ONLY for printing a settings report on assembly. Use
 		;if you get problems (only works in AsmOne/AsmPro, tho)
 
-p61system	=1	;1=system-friendly. Use for DOS/Workbench programs.
+p61system	=0	;1=system-friendly. Use for DOS/Workbench programs.
 
 p61exec	=0	;0 if execbase is destroyed, such as in a trackmo.
 
