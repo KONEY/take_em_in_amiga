@@ -34,10 +34,13 @@ Demo:	;a4=VBR, a6=Custom Registers Base addr
 	;bsr	WaitBlitter
 	;*--- start copper ---*
 	lea	SCREEN1,a0
+
 	moveq	#bpl,d0
 	lea	COPPER1\.BplPtrs+2,a1
 	moveq	#bpls-1,d1
 	bsr.w	PokePtrs
+
+	moveq	#bpl,d0
 	lea	COPPER2\.BplPtrs+2,a1
 	moveq	#bpls-1,d1
 	bsr.w	PokePtrs
@@ -115,10 +118,13 @@ MainLoop:
 	movem.l	a2-a3,DrawBuffer	;draw into a2, show a3
 	;*--- show one... ---*
 	move.l	a3,a0
+
 	move.l	#bpl*h,d0
 	lea	COPPER1\.BplPtrs+2,a1
 	moveq	#bpls-1,d1
 	bsr.w	PokePtrs
+
+	move.l	#bpl*h,d0
 	lea	COPPER2\.BplPtrs+2,a1
 	moveq	#bpls-1,d1
 	bsr.w	PokePtrs
@@ -382,9 +388,9 @@ COPPER1:
 	DC.W $1BE,$000
 
 	.CopperWaits:
-	DC.W $FFDF,$FFFE			; allow VPOS>$ff
-	DC.W $2201,$FF00			; horizontal position masked off
-	DC.W $0180,$000F			; BG COLOR
+	DC.W $FFDF,$FFFE		; allow VPOS>$ff
+	DC.W $2201,$FF00		; horizontal position masked off
+	DC.W $0180,$000F		; BG COLOR
 
 	DC.W $8A,$000		; COPJMP2 - fai partire la copperlist 2
 
@@ -399,8 +405,8 @@ COPPER2:
 	DC.W $94,$D4		; and stop for standard screen.
 
 	DC.W $106,$0C00		; (AGA compat. if any Dual Playf. mode)
-	DC.W $108,0		; bwid-bpl	;modulos
-	DC.W $10A,0		; bwid-bpl	;RISULTATO = 80 ?
+	DC.W $108,bpl		; bwid-bpl	;modulos
+	DC.W $10A,bpl		; bwid-bpl	;RISULTATO = 80 ?
 
 	DC.W $102,0		; SCROLL REGISTER (AND PLAYFIELD PRI)
 	DC.W $104,%0000000000100000	; BPLCON2
@@ -462,15 +468,16 @@ COPPER2:
 	DC.W $FFDF,$FFFE		; allow VPOS>$ff
 	DC.W $2201,$FF00		; horizontal position masked off
 	DC.W $0180,$0F00		; BG COLOR
+
 	DC.W $88,$000		; COPJMP1 - fai partire la copperlist 1
 
 	DC.W $FFFF,$FFFE		; magic value to end copperlist
 _COPPER2:
 
 SPRT_SCROLL_2:
-	DC.B $20		; Posizione verticale di inizio sprite (da $2c a $f2)
-	DC.B $D7		; Posizione orizzontale di inizio sprite (da $40 a $d8)
-	DC.B $FF		; $50+13=$5d	; posizione verticale di fine sprite
+	DC.B $20			; Posizione verticale di inizio sprite (da $2c a $f2)
+	DC.B $D7			; Posizione orizzontale di inizio sprite (da $40 a $d8)
+	DC.B $FF			; $50+13=$5d	; posizione verticale di fine sprite
 	DC.B $03
 	SECTION "ChipBuffers",BSS_C	;BSS doesn't count toward exe size
 	SCROLL_AREA:
