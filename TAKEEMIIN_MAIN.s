@@ -1,6 +1,6 @@
 ;*** HD + MUSIC
 ;*** MiniStartup by Photon ***
-	INCDIR	"NAS:AMIGA/CODE/KONEY/"
+	INCDIR	"NAS:AMIGA/CODE/take_em_in_amiga/"
 	SECTION	"Code",CODE
 	INCLUDE	"Blitter-Register-List.S"
 	INCLUDE	"PhotonsMiniWrapper1.04!.S"
@@ -35,7 +35,10 @@ Demo:	;a4=VBR, a6=Custom Registers Base addr
 	;*--- start copper ---*
 	lea	SCREEN1,a0
 	moveq	#bpl,d0
-	lea	BplPtrs+2,a1
+	lea	COPPER1\.BplPtrs+2,a1
+	moveq	#bpls-1,d1
+	bsr.w	PokePtrs
+	lea	COPPER2\.BplPtrs+2,a1
 	moveq	#bpls-1,d1
 	bsr.w	PokePtrs
 
@@ -43,7 +46,7 @@ Demo:	;a4=VBR, a6=Custom Registers Base addr
 	JSR	__DUPLICATE_SCREEN
 
 	; #### Point LOGO sprites
-	LEA	SpritePointers,A1	; Puntatori in copperlist
+	LEA	COPPER1\.SpritePointers,A1	; Puntatori in copperlist
 	MOVE.L	#SPRT_K,D0	; sprite 0
 	MOVE.W	D0,6(A1)
 	SWAP	D0
@@ -99,9 +102,10 @@ Demo:	;a4=VBR, a6=Custom Registers Base addr
 
 	;MOVE.W	#$8000,VPOSW	; RESETS LOF (from EAB)
 
-	MOVE.L	#Copper,$80(A6)
+	MOVE.L	#COPPER1,$80(A6)	; COP1LCH
+	MOVE.L	#COPPER2,$84(A6)	; COP2LCH
 
-;********************  main loop  ********************
+;********************  main loop *********************
 MainLoop:
 	move.w	#$12c,d0		;No buffering, so wait until raster
 	bsr.w	WaitRaster	;is below the Display Window.
@@ -112,7 +116,10 @@ MainLoop:
 	;*--- show one... ---*
 	move.l	a3,a0
 	move.l	#bpl*h,d0
-	lea	BplPtrs+2,a1
+	lea	COPPER1\.BplPtrs+2,a1
+	moveq	#bpls-1,d1
+	bsr.w	PokePtrs
+	lea	COPPER2\.BplPtrs+2,a1
 	moveq	#bpls-1,d1
 	bsr.w	PokePtrs
 	;*--- ...draw into the other(a2) ---*
@@ -267,7 +274,7 @@ __DUPLICATE_SCREEN:
 	MOVEM.L	D0-A6,-(SP)	; SAVE TO STACK
 	LEA	SCREEN1,A0
 	LEA	SCREEN2,A1
-	ADD.L	#bpl,A1		; Oppure aggiungi la lunghezza di una linea
+	;ADD.L	#bpl,A1		; Oppure aggiungi la lunghezza di una linea
 	MOVE.L	#h*bpls-1,D1	; LINES
 	.OUTERLOOP:
 	MOVE.L	#w/16-1,D0	; SIZE OF SOURCE IN WORDS
@@ -308,7 +315,7 @@ _TEXT:
 
 SCREEN1:	INCBIN "klogo_hd.raw"
 
-Copper:
+COPPER1:
 	DC.W $1FC,0		; Slow fetch mode, remove if AGA demo.
 	DC.W $8E,$2C81		; 238h display window top, left
 	DC.W $90,$2CC1		; and bottom, right.
@@ -324,11 +331,11 @@ Copper:
 	;DC.W $100,bpls*$1000+$200	; enable bitplanes
 	DC.W $100,%1011001000000100	; BPLCON0 1011 0010 0000 0100
 
-	Palette:	
+	.Palette:	
 	DC.W $0180,$0AAB,$0182,$0CCB,$0184,$0889,$0186,$0666
 	DC.W $0188,$0444,$018A,$0333,$018C,$0222,$018E,$0515
 
-	BplPtrs:	
+	.BplPtrs:
 	DC.W $E0,0
 	DC.W $E2,0
 	DC.W $E4,0
@@ -342,7 +349,7 @@ Copper:
 	DC.W $F4,0
 	DC.W $F6,0
 
-	SpritePointers:
+	.SpritePointers:
 	DC.W $120,0,$122,0 ; 0
 	DC.W $124,0,$126,0 ; 1
 	DC.W $128,0,$12A,0 ; 2
@@ -353,7 +360,7 @@ Copper:
 	DC.W $13C,0,$13E,0 ; 7
 	DC.W $13F,0,$140,0 ; 8
 
-	SpriteColors:
+	.SpriteColors:
 	DC.W $1A0,$000
 	DC.W $1A2,$000
 	DC.W $1A4,$000
@@ -374,10 +381,91 @@ Copper:
 	DC.W $1BC,$000
 	DC.W $1BE,$000
 
-	CopperWaits:
+	.CopperWaits:
+	DC.W $FFDF,$FFFE			; allow VPOS>$ff
+	DC.W $2201,$FF00			; horizontal position masked off
+	DC.W $0180,$000F			; BG COLOR
 
-	DC.W $FFFF,$FFFE	;magic value to end copperlist
-_Copper:
+	DC.W $8A,$000		; COPJMP2 - fai partire la copperlist 2
+
+	DC.W $FFFF,$FFFE		; magic value to end copperlist
+_COPPER1:
+
+COPPER2:
+	DC.W $1FC,0		; Slow fetch mode, remove if AGA demo.
+	DC.W $8E,$2C81		; 238h display window top, left
+	DC.W $90,$2CC1		; and bottom, right.
+	DC.W $92,$3C		; Standard bitplane dma fetch start
+	DC.W $94,$D4		; and stop for standard screen.
+
+	DC.W $106,$0C00		; (AGA compat. if any Dual Playf. mode)
+	DC.W $108,0		; bwid-bpl	;modulos
+	DC.W $10A,0		; bwid-bpl	;RISULTATO = 80 ?
+
+	DC.W $102,0		; SCROLL REGISTER (AND PLAYFIELD PRI)
+	DC.W $104,%0000000000100000	; BPLCON2
+	;DC.W $100,bpls*$1000+$200	; enable bitplanes
+	DC.W $100,%1011001000000100	; BPLCON0 1011 0010 0000 0100
+
+	.Palette:
+	DC.W $0180,$0AAB,$0182,$0CCB,$0184,$0889,$0186,$0666
+	DC.W $0188,$0444,$018A,$0333,$018C,$0222,$018E,$0515
+
+	.BplPtrs:
+	DC.W $E0,0
+	DC.W $E2,0
+	DC.W $E4,0
+	DC.W $E6,0
+	DC.W $E8,0
+	DC.W $EA,0
+	DC.W $EC,0
+	DC.W $EE,0
+	DC.W $F0,0
+	DC.W $F2,0
+	DC.W $F4,0
+	DC.W $F6,0
+
+	.SpritePointers:
+	DC.W $120,0,$122,0 ; 0
+	DC.W $124,0,$126,0 ; 1
+	DC.W $128,0,$12A,0 ; 2
+	DC.W $12C,0,$12E,0 ; 3
+	DC.W $130,0,$132,0 ; 4
+	DC.W $134,0,$136,0 ; 5
+	DC.W $138,0,$13A,0 ; 6
+	DC.W $13C,0,$13E,0 ; 7
+	DC.W $13F,0,$140,0 ; 8
+
+	.SpriteColors:
+	DC.W $1A0,$000
+	DC.W $1A2,$000
+	DC.W $1A4,$000
+	DC.W $1A6,$000
+
+	DC.W $1A8,$000
+	DC.W $1AA,$000
+	DC.W $1AC,$000
+	DC.W $1AE,$000
+
+	DC.W $1B0,$000
+	DC.W $1B2,$FFF
+	DC.W $1B4,$000
+	DC.W $1B6,$000
+
+	DC.W $1B8,$000
+	DC.W $1BA,$111
+	DC.W $1BC,$000
+	DC.W $1BE,$000
+
+	.CopperWaits:
+
+	DC.W $FFDF,$FFFE		; allow VPOS>$ff
+	DC.W $2201,$FF00		; horizontal position masked off
+	DC.W $0180,$0F00		; BG COLOR
+	DC.W $88,$000		; COPJMP1 - fai partire la copperlist 1
+
+	DC.W $FFFF,$FFFE		; magic value to end copperlist
+_COPPER2:
 
 SPRT_SCROLL_2:
 	DC.B $20		; Posizione verticale di inizio sprite (da $2c a $f2)
@@ -391,7 +479,7 @@ SPRT_SCROLL_2:
 	DCB.W 255*2,0
 	HIDDEN_BUFFER:
 	DCB.W 22*2,0
-	;SECTION "ChipData",DATA_C	;declared data that must be in chipmem
+	SECTION "ChipData",DATA_C	;declared data that must be in chipmem
 	DC.W 0,0
 
 	SECTION "ChipBuffers",BSS_C	;BSS doesn't count toward exe size
@@ -410,7 +498,7 @@ SPRT_SCROLL:		; THE SHADOW
 	DCB.W 255*2,1
 	HIDDEN_BUFFER_2:
 	DCB.W 22*2,0
-	;SECTION "ChipData",DATA_C	;declared data that must be in chipmem
+	SECTION "ChipData",DATA_C	;declared data that must be in chipmem
 	DC.W 0,0
 
 END
