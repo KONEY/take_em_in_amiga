@@ -105,8 +105,23 @@ Demo:	;a4=VBR, a6=Custom Registers Base addr
 
 	;MOVE.W	#$8000,VPOSW	; RESETS LOF (from EAB)
 
-	MOVE.L	#COPPER1,$80(A6)	; COP1LCH
-	MOVE.L	#COPPER2,$84(A6)	; COP2LCH
+	;CLR.W	$100		; DEBUG | w 0 100 2
+
+	MOVE.L	#COPPER1,COP1LC	; COP1LCH
+	;MOVE.L	#COPPER2,COP2LC	; COP2LCH
+	MOVE.L	#COPPER2,D0
+	LEA	COPPER1\.CopJumpL,A0
+	MOVE.W	D0,(A0)
+	LEA	COPPER1\.CopJumpH,A0
+	SWAP	D0
+	MOVE.W	D0,(A0)
+	
+	MOVE.L	#COPPER1,D0
+	LEA	COPPER2\.CopJumpL,A0
+	MOVE.W	D0,(A0)
+	LEA	COPPER2\.CopJumpH,A0
+	SWAP	D0
+	MOVE.W	D0,(A0)
 
 ;********************  main loop *********************
 MainLoop:
@@ -117,13 +132,15 @@ MainLoop:
 	exg	a2,a3
 	movem.l	a2-a3,DrawBuffer	;draw into a2, show a3
 	;*--- show one... ---*
-	move.l	a3,a0
 
+	move.l	a3,a0
 	move.l	#bpl*h,d0
 	lea	COPPER1\.BplPtrs+2,a1
 	moveq	#bpls-1,d1
 	bsr.w	PokePtrs
 
+	move.l	a3,a0
+	ADD.L	#bpl,A0		; Oppure aggiungi la lunghezza di una linea
 	move.l	#bpl*h,d0
 	lea	COPPER2\.BplPtrs+2,a1
 	moveq	#bpls-1,d1
@@ -390,12 +407,17 @@ COPPER1:
 	.CopperWaits:
 	DC.W $FFDF,$FFFE		; allow VPOS>$ff
 	DC.W $2201,$FF00		; horizontal position masked off
-	DC.W $0180,$000F		; BG COLOR
+	DC.W $0180,$0F00		; BG COLOR
 
-	DC.W $8A,$000		; COPJMP2 - fai partire la copperlist 2
+	;DC.W COPJMP2,$000	; COPJMP2 - fai partire la copperlist 2
+	DC.W COP1LCH
+	.CopJumpH:
+	DC.W $FFFF
+	DC.W COP1LCL
+	.CopJumpL:
+	DC.W $FFFF
 
 	DC.W $FFFF,$FFFE		; magic value to end copperlist
-_COPPER1:
 
 COPPER2:
 	DC.W $1FC,0		; Slow fetch mode, remove if AGA demo.
@@ -467,12 +489,18 @@ COPPER2:
 
 	DC.W $FFDF,$FFFE		; allow VPOS>$ff
 	DC.W $2201,$FF00		; horizontal position masked off
-	DC.W $0180,$0F00		; BG COLOR
+	DC.W $0180,$000F		; BG COLOR
 
-	DC.W $88,$000		; COPJMP1 - fai partire la copperlist 1
+	;DC.W COPJMP1,$000	; COPJMP1 - fai partire la copperlist 1
+
+	DC.W COP1LCH
+	.CopJumpH:
+	DC.W $FFFF
+	DC.W COP1LCL
+	.CopJumpL:
+	DC.W $FFFF
 
 	DC.W $FFFF,$FFFE		; magic value to end copperlist
-_COPPER2:
 
 SPRT_SCROLL_2:
 	DC.B $20			; Posizione verticale di inizio sprite (da $2c a $f2)
