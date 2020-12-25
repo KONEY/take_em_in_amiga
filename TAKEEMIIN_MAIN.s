@@ -153,9 +153,7 @@ __SCROLL_SPRITE_COLUMN:
 
 	; ## MAIN BLIT ####
 	.mainBlit:
-	LEA	SPRT_SCROLL_1\.visible,A4
-	;LEA	SCROLL_VISIBLE_2,A5
-	bsr	WaitBlitter
+	BSR	WaitBlitter
 	MOVE.W	#$FFFF,BLTAFWM		; BLTAFWM lo spiegheremo dopo
 	MOVE.W	#$FFFF,BLTALWM		; BLTALWM lo spiegheremo dopo
 	MOVE.W	#%0000100111110000,BLTCON0	; BLTCON0 (usa A+D); con shift di un pixel
@@ -164,10 +162,15 @@ __SCROLL_SPRITE_COLUMN:
 	MOVE.W	#0,BLTDMOD		; BLTDMOD 40-4=36 il rettangolo
 
 	.goBlitter:
+	LEA	MODULE,A4
 	MOVE.L	A4,BLTAPTH		; BLTAPT  (fisso alla figura sorgente)
-	;MOVE.L	A5,BLTDPTH		; CLONE TO SHADOW
-	;MOVE.W	#(272+14<<6)+%00010101,BLTSIZE ; BLTSIZE (via al blitter !)
-	;bsr	WaitBlitter
+	LEA	SPRT_SCROLL_2\.visible,A5
+	MOVE.L	A5,BLTDPTH		; CLONE TO SHADOW
+	MOVE.W	#(272+14<<6)+%00010101,BLTSIZE ; BLTSIZE (via al blitter !)
+	
+	BSR	WaitBlitter
+	LEA	SPRT_SCROLL_1\.visible,A4
+	MOVE.L	A4,BLTAPTH		; BLTAPT  (fisso alla figura sorgente)
 	SUB.L	#4,A4
 	MOVE.L	A4,BLTDPTH
 	MOVE.W	#(272+14<<6)+%00010101,BLTSIZE ; BLTSIZE (via al blitter !)
@@ -252,11 +255,11 @@ __POKE_SPRITE_POINTERS:
 	SWAP	D0
 	MOVE.W	D0,2(A1)
 
-	;ADDQ.W	#8,A1
-	;MOVE.L	#SPRT_SCROLL_2,D0	; sprite 6 SHADOW
-	;MOVE.W	D0,6(A1)
-	;SWAP	D0
-	;MOVE.W	D0,2(A1)
+	ADDQ.W	#8,A1
+	MOVE.L	#SPRT_SCROLL_2,D0	; sprite 6 SHADOW
+	MOVE.W	D0,6(A1)
+	SWAP	D0
+	MOVE.W	D0,2(A1)
 	RTS
 
 __POINT_COPPERLISTS:
@@ -311,13 +314,14 @@ COPPER2: INCLUDE "copperlist_common.i" _COPPER2:
 
 SPRT_SCROLL_1:
 	DC.B $20			; Posizione verticale di inizio sprite (da $2c a $f2)
-	DC.B $D7			; Posizione orizzontale di inizio sprite (da $40 a $d8)
+	DC.B $A7			; Posizione orizzontale di inizio sprite (da $40 a $d8)
 	DC.B $FF			; $50+13=$5d	; posizione verticale di fine sprite
 	DC.B $03
 	;SECTION "ChipBuffers",BSS_C	;BSS doesn't count toward exe size
+	.scroll_area:
+	DCB.W 10*2,0
 	.visible:
-	DCB.W 256*3,$2AAA
-	DCB.W 256*3,$5555
+	DCB.W h/2*2,0
 	.hidden:
 	DCB.W 54,0
 	;SECTION "ChipData",DATA_C	;declared data that must be in chipmem
@@ -328,12 +332,14 @@ SPRT_SCROLL_2:			; THE SHADOW
 	DC.B $D8			; Posizione orizzontale di inizio sprite (da $40 a $d8)
 	DC.B $FF			; $50+13=$5d	; posizione verticale di fine sprite
 	DC.B $03
-	SECTION "ChipBuffers",BSS_C	;BSS doesn't count toward exe size
+	;SECTION "ChipBuffers",BSS_C	;BSS doesn't count toward exe size
+	.scroll_area:
+	DCB.W 10*2,0
 	.visible:
-	DCB.W 256*2,1
+	DCB.W h/2*2,1
 	.hidden:
 	DCB.W 22*2,0
-	SECTION "ChipData",DATA_C	;declared data that must be in chipmem
+	;SECTION "ChipData",DATA_C	;declared data that must be in chipmem
 	DC.W 0,0
 
 END
