@@ -9,7 +9,7 @@
 ;********** Constants **********
 w=640		; screen width, height, depth
 h=512
-bpls=3		; handy values:
+bpls=4		; handy values:
 bpl=w/16*2	; byte-width of 1 bitplane line (80)
 bwid=bpls*bpl	; byte-width of 1 pixel line (all bpls)
 ;*************
@@ -156,24 +156,27 @@ __SCROLL_SPRITE_COLUMN:
 	BSR	WaitBlitter
 	MOVE.W	#$FFFF,BLTAFWM		; BLTAFWM lo spiegheremo dopo
 	MOVE.W	#$FFFF,BLTALWM		; BLTALWM lo spiegheremo dopo
-	MOVE.W	#%0000100111110000,BLTCON0	; BLTCON0 (usa A+D); con shift di un pixel
 	MOVE.W	#%0000000000000000,BLTCON1	; BLTCON1 BIT 12 DESC MODE
 	MOVE.W	#0,BLTAMOD		; BLTAMOD =0 perche` il rettangolo
 	MOVE.W	#0,BLTDMOD		; BLTDMOD 40-4=36 il rettangolo
 
 	.goBlitter:
-	LEA	MODULE,A4
+	MOVE.W	#%0001100111110000,BLTCON0	; BLTCON0 (usa A+D); con shift di un pixel
+	LEA	SPRT_SCROLL_1\.visible,A4
 	MOVE.L	A4,BLTAPTH		; BLTAPT  (fisso alla figura sorgente)
 	LEA	SPRT_SCROLL_2\.visible,A5
+	SUB.L	#4,A5
 	MOVE.L	A5,BLTDPTH		; CLONE TO SHADOW
-	MOVE.W	#(272+14<<6)+%00010101,BLTSIZE ; BLTSIZE (via al blitter !)
+	MOVE.W	#266*3*64+1,BLTSIZE ; BLTSIZE (via al blitter !)
 	
 	BSR	WaitBlitter
+	MOVE.W	#%0000100111110000,BLTCON0	; BLTCON0 (usa A+D); con shift di un pixel
 	LEA	SPRT_SCROLL_1\.visible,A4
 	MOVE.L	A4,BLTAPTH		; BLTAPT  (fisso alla figura sorgente)
 	SUB.L	#4,A4
 	MOVE.L	A4,BLTDPTH
-	MOVE.W	#(272+14<<6)+%00010101,BLTSIZE ; BLTSIZE (via al blitter !)
+	;MOVE.W	#(272+14<<6)+%00010101,BLTSIZE ; BLTSIZE (via al blitter !)
+	MOVE.W	#266*3*64+1,BLTSIZE ; BLTSIZE (via al blitter !)
 	; ## MAIN BLIT ####
 	
 	MOVEM.L	(SP)+,D0-A6	; FETCH FROM STACK
@@ -299,11 +302,12 @@ FONT:	DC.L 0,0		; SPACE CHAR
 	INCBIN "cyber_font.raw",0
 	EVEN
 
-TEXT:	DC.B "WELCOME TO:   - TAKE EM IN -   KONEY THIRD AMIGA MUSIC RELEASE !   "
+TEXT:	DC.B "WELCOME TO:   /\/ TAKE EM IN \/\   KONEY THIRD AMIGA MUSIC RELEASE !   "
 	DC.B "TECHNO TECHNO TECHNO TECHNO !!!!  "
 	DC.B "AS USUAL IT SHOULD NOT BE NECESSARY TO REMIND THAT THIS PIECE OF "
 	DC.B "CRAPPY CODE IS BEST VIEWED ON THE REAL HARDWARE ! WELL VERTICAL TEXT "
 	DC.B "IS A BIT ODD AS NORMAL RULES DO NOT APPLY LIKE COMMAS AND EXCLAMATION POINTS ! "
+	DC.B "\/\/\/\/\/\/\/\/ "
 	EVEN
 _TEXT:
 
@@ -314,7 +318,7 @@ COPPER2: INCLUDE "copperlist_common.i" _COPPER2:
 
 SPRT_SCROLL_1:
 	DC.B $20			; Posizione verticale di inizio sprite (da $2c a $f2)
-	DC.B $A7			; Posizione orizzontale di inizio sprite (da $40 a $d8)
+	DC.B $D6			; Posizione orizzontale di inizio sprite (da $40 a $d8)
 	DC.B $FF			; $50+13=$5d	; posizione verticale di fine sprite
 	DC.B $03
 	;SECTION "ChipBuffers",BSS_C	;BSS doesn't count toward exe size
@@ -323,22 +327,22 @@ SPRT_SCROLL_1:
 	.visible:
 	DCB.W h/2*2,0
 	.hidden:
-	DCB.W 54,0
+	DCB.W h,0
 	;SECTION "ChipData",DATA_C	;declared data that must be in chipmem
 	DC.W 0,0
 
 SPRT_SCROLL_2:			; THE SHADOW
-	DC.B $22			; Posizione verticale di inizio sprite (da $2c a $f2)
-	DC.B $D8			; Posizione orizzontale di inizio sprite (da $40 a $d8)
+	DC.B $21			; Posizione verticale di inizio sprite (da $2c a $f2)
+	DC.B $D6			; Posizione orizzontale di inizio sprite (da $40 a $d8)
 	DC.B $FF			; $50+13=$5d	; posizione verticale di fine sprite
 	DC.B $03
 	;SECTION "ChipBuffers",BSS_C	;BSS doesn't count toward exe size
 	.scroll_area:
 	DCB.W 10*2,0
 	.visible:
-	DCB.W h/2*2,1
+	DCB.W h/2*2,0
 	.hidden:
-	DCB.W 22*2,0
+	DCB.W h,0
 	;SECTION "ChipData",DATA_C	;declared data that must be in chipmem
 	DC.W 0,0
 

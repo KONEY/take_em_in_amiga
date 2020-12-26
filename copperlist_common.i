@@ -62,7 +62,7 @@
 
 	DC.W $1B0,$000
 	DC.W $1B2,$FFF
-	DC.W $1B4,$000
+	DC.W $1B4,$FFF
 	DC.W $1B6,$000
 
 	DC.W $1B8,$000
