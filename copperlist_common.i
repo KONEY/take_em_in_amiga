@@ -21,7 +21,7 @@
 	DC.W $100,%1011001000000100	; BPLCON0 1011 0010 0000 0100
 
 	.Palette:	
-	DC.W $0180,$0AAB,$0182,$0CCB,$0184,$0889,$0186,$0666
+	DC.W $0180,$0222,$0182,$0CCB,$0184,$0889,$0186,$0666 ; $0180,$0AAB
 	DC.W $0188,$0444,$018A,$0333,$018C,$0222,$018E,$0515
 
 	.BplPtrs:
@@ -71,8 +71,43 @@
 	DC.W $1BE,$000
 
 	.CopperWaits:
+	DC.W $1C01,$FF00		; horizontal position masked off
+	DC.W $0180,$0333		; BG COLOR
+	DC.W $1F01,$FF00		; horizontal position masked off
+	DC.W $0180,$0444		; BG COLOR
+	DC.W $2201,$FF00		; horizontal position masked off
+	DC.W $0180,$0555		; BG COLOR
+	DC.W $2501,$FF00		; horizontal position masked off
+	DC.W $0180,$0666		; BG COLOR
+	DC.W $2801,$FF00		; horizontal position masked off
+	DC.W $0180,$0778		; BG COLOR
+	DC.W $2B01,$FF00		; horizontal position masked off
+	DC.W $0180,$0889		; BG COLOR
+	DC.W $2E01,$FF00		; horizontal position masked off
+	DC.W $0180,$099A		; BG COLOR
+	DC.W $2801,$FF00		; horizontal position masked off
+	DC.W $0180,$0AAB		; BG COLOR
+
+	;DC.W $28A0,$FFFE
+	;DC.W $0180,$0AAB		; BG COLOR
+
 	DC.W $FFDF,$FFFE		; allow VPOS>$ff
 	;DC.W $2201,$FF00		; horizontal position masked off
 	;DC.W $0180,$0F00		; BG COLOR
+
+	DC.W $2101,$FF00		; horizontal position masked off
+	DC.W $0180,$099A		; BG COLOR
+	DC.W $2401,$FF00		; horizontal position masked off
+	DC.W $0180,$0889		; BG COLOR
+	DC.W $2701,$FF00		; horizontal position masked off
+	DC.W $0180,$0778		; BG COLOR
+	DC.W $2A01,$FF00		; horizontal position masked off
+	DC.W $0180,$0666		; BG COLOR
+	DC.W $2E01,$FF00		; horizontal position masked off
+	DC.W $0180,$0555		; BG COLOR
+	DC.W $3201,$FF00		; horizontal position masked off
+	DC.W $0180,$0444		; BG COLOR
+	DC.W $3501,$FF00		; horizontal position masked off
+	DC.W $0180,$0333		; BG COLOR
 
 	DC.W $FFFF,$FFFE		; magic value to end copperlist
