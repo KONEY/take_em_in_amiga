@@ -1,8 +1,8 @@
 SPRT_K:	
-	DC.B	$33	; Posizione verticale di inizio sprite (da $2c a $f2)
+	DC.B	$37	; Posizione verticale di inizio sprite (da $2c a $f2)
 	SPRT_K_POS:
 	DC.B	$44	; Posizione orizzontale di inizio sprite (da $40 a $d8)
-	DC.B	$42	; $50+13=$5d	; posizione verticale di fine sprite
+	DC.B	$46	; $50+13=$5d	; posizione verticale di fine sprite
 	DC.B	$00
 	DC.W	$E00E,$E00E,$E00E,$E00E,$E00E,$E00E
 	DC.W	$E070,$E070,$E070,$E070,$E070,$E070
@@ -11,10 +11,10 @@ SPRT_K:
 	DC.W	$FC0E,$FC0E,$FC0E,$FC0E,$FC0E,$FC0E
 	DC.W	0,0	; 2 word azzerate definiscono la fine dello sprite.
 SPRT_O:	
-	DC.B	$33	; Posizione verticale di inizio sprite (da $2c a $f2)
+	DC.B	$37	; Posizione verticale di inizio sprite (da $2c a $f2)
 	SPRT_O_POS:
 	DC.B	$4D	; Posizione orizzontale di inizio sprite (da $40 a $d8)
-	DC.B	$42	; $50+13=$5d	; posizione verticale di fine sprite
+	DC.B	$46	; $50+13=$5d	; posizione verticale di fine sprite
 	DC.B	$00
 	DC.W	$FFFE,$FFFE,$FFFE,$FFFE,$FFFE,$FFFE
 	DC.W	$E00E,$E00E,$E00E,$E00E,$E00E,$E00E
@@ -23,10 +23,10 @@ SPRT_O:
 	DC.W	$FFFE,$FFFE,$FFFE,$FFFE,$FFFE,$FFFE
 	DC.W	0,0	; 2 word azzerate definiscono la fine dello sprite.
 SPRT_N:	
-	DC.B	$33	; Posizione verticale di inizio sprite (da $2c a $f2)
+	DC.B	$37	; Posizione verticale di inizio sprite (da $2c a $f2)
 	SPRT_N_POS:
 	DC.B	$56	; Posizione orizzontale di inizio sprite (da $40 a $d8)
-	DC.B	$42	; $50+13=$5d	; posizione verticale di fine sprite
+	DC.B	$46	; $50+13=$5d	; posizione verticale di fine sprite
 	DC.B	$00
 	DC.W	$FFFE,$FFFE,$FFFE,$FFFE,$FFFE,$FFFE
 	DC.W	$E00E,$E00E,$E00E,$E00E,$E00E,$E00E
@@ -34,12 +34,11 @@ SPRT_N:
 	DC.W	$FC0E,$FC0E,$FC0E,$FC0E,$FC0E,$FC0E
 	DC.W	$FC0E,$FC0E,$FC0E,$FC0E,$FC0E,$FC0E
 	DC.W	0,0	; 2 word azzerate definiscono la fine dello sprite.
-
 SPRT_E:	
-	DC.B	$33	; Posizione verticale di inizio sprite (da $2c a $f2)
+	DC.B	$37	; Posizione verticale di inizio sprite (da $2c a $f2)
 	SPRT_E_POS:
 	DC.B	$5F	; Posizione orizzontale di inizio sprite (da $40 a $d8)
-	DC.B	$42	; $50+13=$5d	; posizione verticale di fine sprite
+	DC.B	$46	; $50+13=$5d	; posizione verticale di fine sprite
 	DC.B	$00
 	DC.W	$FFFE,$FFFE,$FFFE,$FFFE,$FFFE,$FFFE
 	DC.W	$E000,$E000,$E000,$E000,$E000,$E000
@@ -48,10 +47,10 @@ SPRT_E:
 	DC.W	$FFFE,$FFFE,$FFFE,$FFFE,$FFFE,$FFFE
 	DC.W	0,0	; 2 word azzerate definiscono la fine dello sprite.
 SPRT_Y:	
-	DC.B	$33	; Posizione verticale di inizio sprite (da $2c a $f2)
+	DC.B	$37	; Posizione verticale di inizio sprite (da $2c a $f2)
 	SPRT_Y_POS:
 	DC.B	$68	; Posizione orizzontale di inizio sprite (da $40 a $d8)
-	DC.B	$42	; $50+13=$5d	; posizione verticale di fine sprite
+	DC.B	$46	; $50+13=$5d	; posizione verticale di fine sprite
 	DC.B	$00
 	DC.W	$FC7E,$FC7E,$FC7E,$FC7E,$FC7E,$FC7E
 	DC.W	$1FF0,$1FF0,$1FF0,$1FF0,$1FF0,$1FF0

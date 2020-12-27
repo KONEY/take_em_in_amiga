@@ -171,7 +171,7 @@ __SCROLL_SPRITE_COLUMN:
 	
 	BSR	WaitBlitter
 	MOVE.W	#%0000100111110000,BLTCON0	; BLTCON0 (usa A+D); con shift di un pixel
-	LEA	SPRT_SCROLL_1\.visible,A4
+	;LEA	SPRT_SCROLL_1\.visible,A4
 	MOVE.L	A4,BLTAPTH		; BLTAPT  (fisso alla figura sorgente)
 	SUB.L	#4,A4
 	MOVE.L	A4,BLTDPTH

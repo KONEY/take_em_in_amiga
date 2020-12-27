@@ -61,12 +61,12 @@
 	DC.W $1AE,$000
 
 	DC.W $1B0,$000
-	DC.W $1B2,$FFF
+	DC.W $1B2,$000
 	DC.W $1B4,$FFF
 	DC.W $1B6,$000
 
 	DC.W $1B8,$000
-	DC.W $1BA,$111
+	DC.W $1BA,$000
 	DC.W $1BC,$000
 	DC.W $1BE,$000
 
@@ -83,26 +83,36 @@
 	DC.W $0180,$0778		; BG COLOR
 	DC.W $2B01,$FF00		; horizontal position masked off
 	DC.W $0180,$0889		; BG COLOR
+	DC.W $01B4,$099A		; TEXT COLOR
 	DC.W $2E01,$FF00		; horizontal position masked off
 	DC.W $0180,$099A		; BG COLOR
-	DC.W $2801,$FF00		; horizontal position masked off
+	DC.W $01BC,$0556		; TEXT SHADOW COLOR
+	DC.W $01B4,$0AAB		; TEXT COLOR
+	DC.W $3101,$FF00		; horizontal position masked off
 	DC.W $0180,$0AAB		; BG COLOR
+	DC.W $01B4,$0FFF		; TEXT COLOR
+	DC.W $01BC,$0000		; TEXT SHADOW COLOR
 
-	;DC.W $28A0,$FFFE
-	;DC.W $0180,$0AAB		; BG COLOR
+	;DC.W $3441,$FFFE		; HPOS
+	;DC.W $0180,$0F00		; BG COLOR
+	;DC.W $0180,$0FF0		; BG COLOR
+	;DC.W $0180,$0F0F		; BG COLOR
 
 	DC.W $FFDF,$FFFE		; allow VPOS>$ff
-	;DC.W $2201,$FF00		; horizontal position masked off
-	;DC.W $0180,$0F00		; BG COLOR
 
 	DC.W $2101,$FF00		; horizontal position masked off
 	DC.W $0180,$099A		; BG COLOR
+	DC.W $01B4,$0AAB		; TEXT COLOR
+	DC.W $01BC,$0445		; TEXT SHADOW COLOR
 	DC.W $2401,$FF00		; horizontal position masked off
 	DC.W $0180,$0889		; BG COLOR
+	DC.W $01B4,$099A		; TEXT COLOR
 	DC.W $2701,$FF00		; horizontal position masked off
 	DC.W $0180,$0778		; BG COLOR
+	DC.W $01B4,$0889		; TEXT COLOR
 	DC.W $2A01,$FF00		; horizontal position masked off
 	DC.W $0180,$0666		; BG COLOR
+	DC.W $01B4,$0777		; TEXT COLOR
 	DC.W $2E01,$FF00		; horizontal position masked off
 	DC.W $0180,$0555		; BG COLOR
 	DC.W $3201,$FF00		; horizontal position masked off
