@@ -18,11 +18,14 @@
 	DC.W $102,0		; SCROLL REGISTER (AND PLAYFIELD PRI)
 	DC.W $104,%0000000000100000	; BPLCON2
 	;DC.W $100,bpls*$1000+$200	; enable bitplanes
-	DC.W $100,%1011001000000100	; BPLCON0 1011 0010 0000 0100
+	DC.W $100,%1100001000000100	; BPLCON0 1011 0010 0000 0100
 
 	.Palette:	
-	DC.W $0180,$0222,$0182,$0CCB,$0184,$0889,$0186,$0666 ; $0180,$0AAB
-	DC.W $0188,$0444,$018A,$0333,$018C,$0222,$018E,$0515
+	DC.W $0180,$0000,$0182,$0DED,$0184,$0AAC,$0186,$0999
+	DC.W $0188,$0888,$018A,$0666,$018C,$0444,$018E,$0222
+	.ColorChangers:
+	DC.W $0190,$0515,$0192,$0AAB,$0194,$0AAB,$0196,$0AAB
+	DC.W $0198,$0AAB,$019A,$0AAB,$019C,$0AAB,$019E,$0AAB
 
 	.BplPtrs:
 	DC.W $E0,0
@@ -71,53 +74,11 @@
 	DC.W $1BE,$000
 
 	.CopperWaits:
-	DC.W $1C01,$FF00		; horizontal position masked off
-	DC.W $0180,$0333		; BG COLOR
-	DC.W $1F01,$FF00		; horizontal position masked off
-	DC.W $0180,$0444		; BG COLOR
-	DC.W $2201,$FF00		; horizontal position masked off
-	DC.W $0180,$0555		; BG COLOR
-	DC.W $2501,$FF00		; horizontal position masked off
-	DC.W $0180,$0666		; BG COLOR
-	DC.W $2801,$FF00		; horizontal position masked off
-	DC.W $0180,$0778		; BG COLOR
-	DC.W $2B01,$FF00		; horizontal position masked off
-	DC.W $0180,$0889		; BG COLOR
-	DC.W $01B4,$099A		; TEXT COLOR
-	DC.W $2E01,$FF00		; horizontal position masked off
-	DC.W $0180,$099A		; BG COLOR
-	DC.W $01BC,$0556		; TEXT SHADOW COLOR
-	DC.W $01B4,$0AAB		; TEXT COLOR
-	DC.W $3101,$FF00		; horizontal position masked off
-	DC.W $0180,$0AAB		; BG COLOR
-	DC.W $01B4,$0FFF		; TEXT COLOR
-	DC.W $01BC,$0000		; TEXT SHADOW COLOR
-
 	;DC.W $3441,$FFFE		; HPOS
 	;DC.W $0180,$0F00		; BG COLOR
 	;DC.W $0180,$0FF0		; BG COLOR
 	;DC.W $0180,$0F0F		; BG COLOR
 
-	DC.W $FFDF,$FFFE		; allow VPOS>$ff
-
-	DC.W $2101,$FF00		; horizontal position masked off
-	DC.W $0180,$099A		; BG COLOR
-	DC.W $01B4,$0AAB		; TEXT COLOR
-	DC.W $01BC,$0445		; TEXT SHADOW COLOR
-	DC.W $2401,$FF00		; horizontal position masked off
-	DC.W $0180,$0889		; BG COLOR
-	DC.W $01B4,$099A		; TEXT COLOR
-	DC.W $2701,$FF00		; horizontal position masked off
-	DC.W $0180,$0778		; BG COLOR
-	DC.W $01B4,$0889		; TEXT COLOR
-	DC.W $2A01,$FF00		; horizontal position masked off
-	DC.W $0180,$0666		; BG COLOR
-	DC.W $01B4,$0777		; TEXT COLOR
-	DC.W $2E01,$FF00		; horizontal position masked off
-	DC.W $0180,$0555		; BG COLOR
-	DC.W $3201,$FF00		; horizontal position masked off
-	DC.W $0180,$0444		; BG COLOR
-	DC.W $3501,$FF00		; horizontal position masked off
-	DC.W $0180,$0333		; BG COLOR
+	;DC.W $FFDF,$FFFE		; allow VPOS>$ff
 
 	DC.W $FFFF,$FFFE		; magic value to end copperlist

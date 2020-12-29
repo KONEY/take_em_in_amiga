@@ -311,7 +311,7 @@ TEXT:	DC.B "WELCOME TO:   /\/ TAKE EM IN \/\   KONEY THIRD AMIGA MUSIC RELEASE !
 	EVEN
 _TEXT:
 
-KONEYBG:	INCBIN "klogo_hd.raw"
+KONEYBG:	INCBIN "klogo_hdV2.raw"
 
 COPPER1: INCLUDE "copperlist_common.i" _COPPER1:
 COPPER2: INCLUDE "copperlist_common.i" _COPPER2:
