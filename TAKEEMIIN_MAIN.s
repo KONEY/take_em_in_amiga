@@ -94,7 +94,7 @@ MainLoop:
 	bsr	WaitBlitter
 
 	; do stuff here :)
-
+	BSR.W	__SET_PT_VISUALS
 	BSR.W	__POPULATE_TXT_BUFFER
 	BSR.W	__SCROLL_SPRITE_COLUMN
 
@@ -284,11 +284,108 @@ __POINT_COPPERLISTS:
 	MOVE.L	D0,COP1LC	; COP1LCH
 	RTS
 
+__SET_PT_VISUALS:
+	; ## MOD VISUALIZERS ##########
+	ifne visuctrs
+	MOVEM.L D0-A6,-(SP)
+
+	; ## COMMANDS 80x TRIGGERED EVENTS ##
+	MOVE.W	P61_1F,D2		; 1Fx
+	CMPI.W	#4,D2		; 1F4 - INVERT DIRECTION CH 3
+	BNE.S	.keepDir0
+
+	MOVE.W	#0,P61_1F		; RESET FX
+	.keepDir0:
+	MOVE.W	P61_E8,D2		; 80x
+	CMPI.W	#4,D2		; 804 - INVERT DIRECTION CH 3
+	BNE.S	.keepDir3
+
+	MOVE.W	#0,P61_E8	; RESET FX
+	.keepDir3:
+	MOVE.W	P61_E8,D2		; 80x
+	CMPI.W	#1,D2		; 804 - INVERT DIRECTION CH 3
+	BNE.S	.keepDir1
+
+	MOVE.W	#0,P61_E8	; RESET FX
+	.keepDir1:
+	; ## COMMANDS 80x TRIGGERED EVENTS ##
+
+	; BASS
+	LEA	P61_visuctr0(PC),A0 ; which channel? 0-3
+	MOVEQ	#20,D0		; maxvalue
+	SUB.W	(A0),D0		; -#frames/irqs since instrument trigger
+	BPL.S	.ok0		; below minvalue?
+	MOVEQ	#0,D0		; then set to minvalue
+	.ok0:
+	MOVE.B	D0,AUDIOCHLEVEL0
+	BCLR.L	#0,D0		; MAKES INDEX EVEN
+	LEA	COL_TAB_PURPLE,A3
+	LEA	COPPER1\.ColPokes,A1
+	LEA	COPPER2\.ColPokes,A2
+	MOVE.W	(A3,D0.W),2(A1)	; FX 1
+	MOVE.W	(A3,D0.W),2(A2)	; 4(A2) FOR GLITCH!!
+	;MOVE.W	#$0404,2(A1)	; FX 1
+	;MOVE.W	#$0525,2(A2)	; 4(A2) FOR GLITCH!! 
+	;MOVE.W	#$0626,2(A1)	; FX 1
+	_ok0:
+
+	; KICK
+	LEA	P61_visuctr1(PC),A0 ; which channel? 0-3
+	MOVEQ	#8,D0		; maxvalue
+	SUB.W	(A0),D0		; -#frames/irqs since instrument trigger
+	BPL.S	.ok1		; below minvalue?
+	MOVEQ	#0,D0		; then set to minvalue
+	.ok1:
+	MOVE.B	D0,AUDIOCHLEVEL1
+	;MULU.W	#$2,D0		; start from a darker shade
+	;MOVE.L	D0,D3
+	;ROL.L	#$4,D3		; expand bits to green
+	;ADD.L	D3,D0
+	;ROL.L	#$4,D3
+	;ADD.L	D3,D0		; expand bits to red
+	_ok1:
+
+	; HATZ
+	LEA	P61_visuctr2(PC),A0 ; which channel? 0-3
+	MOVEQ	#15,D0		; maxvalue
+	SUB.W	(A0),D0		; -#frames/irqs since instrument trigger
+	BPL.S	.ok2		; below minvalue?
+	MOVEQ	#0,D0		; then set to minvalue
+	.ok2:
+	MOVE.B	D0,AUDIOCHLEVEL2
+	_ok2:
+
+	; DRUMZ
+	LEA	P61_visuctr3(PC),A0 ; which channel? 0-3
+	MOVEQ	#15,D0		; maxvalue
+	SUB.W	(A0),D0		; -#frames/irqs since instrument trigger
+	BPL.S	.ok3		; below minvalue?
+	MOVEQ	#0,D0		; then set to minvalue
+	.ok3:
+	MOVE.B	D0,AUDIOCHLEVEL3
+	_ok3:
+
+	MOVEM.L (SP)+,D0-A6
+	endc
+	RTS
+	; MOD VISUALIZERS *****
+
 ;********** Fastmem Data **********
+AUDIOCHLEVEL0:	DC.W 0
+AUDIOCHLEVEL1:	DC.W 0
+AUDIOCHLEVEL2:	DC.W 0
+AUDIOCHLEVEL3:	DC.W 0
+P61_LAST_POS:	DC.W MODSTART_POS
+P61_DUMMY_POS:	DC.W 0
+P61_FRAMECOUNT:	DC.W 0
 TEXTINDEX:	DC.W 0
 FRAMESINDEX:	DC.W SCROLLFACTOR
 DrawBuffer:	DC.L KONEYBG	; pointers to buffers to be swapped
 ViewBuffer:	DC.L KONEYBG
+
+COL_TAB_PURPLE:	DC.W $0010,$0010,$0010,$0010,$0010,$0010,$0020,$0111,$0121,$0141
+		DC.W $0222,$0242,$0312,$0323,$0444,$0414,$0555,$0525,$0666,$0626
+COL_INDEX_PURPLE:	DC.W 0
 
 ;**************************************************************
 	SECTION "ChipData",DATA_C	;declared data that must be in chipmem
