@@ -9,6 +9,7 @@ v1.0 - AreXX script by www.KONEY.org 2020
 5 3: clsdhat
 6 4: +Rulante
 7 4: +Rulante
+
 8 5: Cambio-kick_1
 9 6: cambio - kick2
 10 7: Kontinua

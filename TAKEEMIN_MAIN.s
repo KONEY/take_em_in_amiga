@@ -95,9 +95,26 @@ MainLoop:
 	bsr	WaitBlitter
 
 	; do stuff here :)
-	BSR.W	__SET_PT_VISUALS
 	BSR.W	__POPULATE_TXT_BUFFER
 	BSR.W	__SCROLL_SPRITE_COLUMN
+
+	; ## SONG POS RESETS ##
+	MOVE.W	P61_Pos,D6
+	MOVE.W	P61_DUMMY_POS,D5
+	CMP.W	D5,D6
+	BEQ.S	.dontReset
+	ADDQ.W	#1,P61_DUMMY_POS
+	ADDQ.W	#1,P61_LAST_POS
+	.dontReset:
+	; ## SONG POS RESETS ##
+
+	SONG_BLOCKS_EVENTS:
+	;* FOR TIMED EVENTS ON BLOCK ****
+	MOVE.W	P61_LAST_POS,D5
+	LEA	TIMELINE,A3
+	LSL.W	#2,D5		; CALCULATES OFFSET (OPTIMIZED)
+	MOVE.L	(A3,D5),A4	; THANKS HEDGEHOG!!
+	JSR	(A4)		; EXECUTE SUBROUTINE BLOCK#
 
 	;*--- main loop end ---*
 	BTST	#6,$BFE001
@@ -288,72 +305,131 @@ __POINT_COPPERLISTS:
 __SET_PT_VISUALS:
 	; ## MOD VISUALIZERS ##########
 	ifne visuctrs
-	MOVEM.L D0-A6,-(SP)
+	;MOVEM.L D0-A6,-(SP)
+
+	; BASS
+	LEA	P61_visuctr0(PC),A0	; which channel? 0-3
+	MOVEQ	#19,D0			; maxvalue
+	SUB.W	(A0),D0			; -#frames/irqs since instrument trigger
+	BPL.S	.ok0			; below minvalue?
+	MOVEQ	#0,D0			; then set to minvalue
+	.ok0:
+	BCLR.L	#0,D0			; MAKES INDEX EVEN
+	_ok0:
+
+	; KICK
+	LEA	P61_visuctr1(PC),A0		; which channel? 0-3
+	MOVEQ	#14,D1			; maxvalue
+	SUB.W	(A0),D1			; -#frames/irqs since instrument trigger
+	BPL.S	.ok1			; below minvalue?
+	MOVEQ	#0,D1			; then set to minvalue
+	.ok1:
+	BCLR.L	#0,D1			; MAKES INDEX EVEN
+	_ok1:
+
+	; HATZ
+	LEA	P61_visuctr2(PC),A0	; which channel? 0-3
+	MOVEQ	#19,D2			; maxvalue
+	SUB.W	(A0),D2			; -#frames/irqs since instrument trigger
+	BPL.S	.ok2			; below minvalue?
+	MOVEQ	#0,D2			; then set to minvalue
+	.ok2:
+	BCLR.L	#0,D2			; MAKES INDEX EVEN
+	_ok2:
+
+	; DRUMZ
+	LEA	P61_visuctr3(PC),A0	; which channel? 0-3
+	MOVEQ	#19,D3			; maxvalue
+	SUB.W	(A0),D3			; -#frames/irqs since instrument trigger
+	BPL.S	.ok3			; below minvalue?
+	MOVEQ	#0,D3			; then set to minvalue
+	.ok3:
+	BCLR.L	#0,D3			; MAKES INDEX EVEN
+	_ok3:
 
 	LEA	COPPER1\.ColPokes,A1	; OPTIMIZATIONS
 	LEA	COPPER2\.ColPokes,A2	; OPTIMIZATIONS
 	LEA	COL_TAB_PURPLE,A3		; OPTIMIZATIONS
 	LEA	COL_TAB_WHITE,A4		; OPTIMIZATIONS
 	LEA	COL_TAB_BLACK,A5		; OPTIMIZATIONS
+	LEA	COL_TAB_GREY,A0		; OPTIMIZATIONS
 
-	; BASS
-	LEA	P61_visuctr0(PC),A0 ; which channel? 0-3
-	MOVEQ	#19,D0		; maxvalue
-	SUB.W	(A0),D0		; -#frames/irqs since instrument trigger
-	BPL.S	.ok0		; below minvalue?
-	MOVEQ	#0,D0		; then set to minvalue
-	.ok0:
-	MOVE.B	D0,AUDIOCHLEVEL0
-	BCLR.L	#0,D0		; MAKES INDEX EVEN
-	MOVE.W	(A3,D0.W),$DFF190	; POKE "K" WITH CPU
-	_ok0:
-
-	; KICK
-	LEA	P61_visuctr1(PC),A0 ; which channel? 0-3
-	MOVEQ	#19,D0		; maxvalue
-	SUB.W	(A0),D0		; -#frames/irqs since instrument trigger
-	BPL.S	.ok1		; below minvalue?
-	MOVEQ	#0,D0		; then set to minvalue
-	.ok1:
-	MOVE.B	D0,AUDIOCHLEVEL1
-	BCLR.L	#0,D0		; MAKES INDEX EVEN
-
-	MOVE.W	(A5,D0.W),14(A1)	; FX 1
-	MOVE.W	(A5,D0.W),14(A2)	; 4(A2) FOR GLITCH!!
-	_ok1:
-
-	; HATZ
-	LEA	P61_visuctr2(PC),A0 ; which channel? 0-3
-	MOVEQ	#19,D0		; maxvalue
-	SUB.W	(A0),D0		; -#frames/irqs since instrument trigger
-	BPL.S	.ok2		; below minvalue?
-	MOVEQ	#0,D0		; then set to minvalue
-	.ok2:
-	MOVE.B	D0,AUDIOCHLEVEL2
-	BCLR.L	#0,D0		; MAKES INDEX EVEN
-	MOVE.W	(A4,D0.W),18(A1)	; 4(A2) FOR GLITCH!!
-	MOVE.W	(A4,D0.W),18(A2)	; 4(A2) FOR GLITCH!!
-	_ok2:
-
-	; DRUMZ
-	LEA	P61_visuctr3(PC),A0 ; which channel? 0-3
-	MOVEQ	#19,D0		; maxvalue
-	SUB.W	(A0),D0		; -#frames/irqs since instrument trigger
-	BPL.S	.ok3		; below minvalue?
-	MOVEQ	#0,D0		; then set to minvalue
-	.ok3:
-	MOVE.B	D0,AUDIOCHLEVEL3
-	BCLR.L	#0,D0		; MAKES INDEX EVEN
-	MOVE.W	(A4,D0.W),22(A2)	; 4(A2) FOR GLITCH!!
-	MOVE.W	(A4,D0.W),22(A1)	; 4(A2) FOR GLITCH!!
-
-	MOVE.W	(A5,D0.W),2(A2)	; 4(A2) FOR GLITCH!!
-	_ok3:
-
-	MOVEM.L (SP)+,D0-A6
+	;MOVEM.L (SP)+,D0-A6
 	endc
 	RTS
 	; MOD VISUALIZERS *****
+
+__BLOCK_FULL:
+	; 0: BEGIN
+	BSR.W	__SET_PT_VISUALS
+
+	MOVE.W	(A3,D0.W),$DFF190		; POKE "K" WITH CPU
+
+	MOVE.W	(A5,D1.W),14(A1)		; FX 1
+	MOVE.W	(A5,D1.W),14(A2)		; 4(A2) FOR GLITCH!!
+
+	MOVE.W	(A4,D2.W),18(A1)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A4,D2.W),18(A2)		; 4(A2) FOR GLITCH!!
+
+	MOVE.W	(A4,D3.W),22(A2)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A4,D3.W),22(A1)		; 4(A2) FOR GLITCH!!
+	RTS
+
+__BLOCK_0:
+	; 0: BEGIN
+	BSR.W	__SET_PT_VISUALS
+
+	MOVE.W	(A3,D0.W),$DFF190		; POKE "K" WITH CPU
+
+	MOVE.W	(A5,D1.W),22(A1)		; FX 1
+	MOVE.W	(A5,D1.W),22(A2)		; 4(A2) FOR GLITCH!!
+	RTS
+
+__BLOCK_1:
+	; 0: BEGIN
+	BSR.W	__SET_PT_VISUALS
+
+	MOVE.W	(A3,D0.W),$DFF190		; POKE "K" WITH CPU
+
+	MOVE.W	(A0,D1.W),26(A1)		; FX 1
+	MOVE.W	(A0,D1.W),26(A2)		; 4(A2) FOR GLITCH!!
+
+	MOVE.W	(A5,D1.W),22(A1)		; FX 1
+	MOVE.W	(A5,D1.W),22(A2)		; 4(A2) FOR GLITCH!!
+	RTS
+
+__BLOCK_2:
+	; 0: BEGIN
+	BSR.W	__SET_PT_VISUALS
+
+	MOVE.W	(A3,D0.W),$DFF190		; POKE "K" WITH CPU
+
+	MOVE.W	(A0,D1.W),26(A1)		; FX 1
+	MOVE.W	(A0,D1.W),26(A2)		; 4(A2) FOR GLITCH!!
+
+	MOVE.W	(A5,D2.W),14(A1)		; FX 1
+	MOVE.W	(A5,D2.W),14(A2)		; 4(A2) FOR GLITCH!!
+	RTS
+
+__BLOCK_3:
+	; 0: BEGIN
+	BSR.W	__SET_PT_VISUALS
+
+	MOVE.W	(A3,D0.W),$DFF190		; POKE "K" WITH CPU
+
+	MOVE.W	(A0,D1.W),26(A1)		; FX 1
+	MOVE.W	(A0,D1.W),26(A2)		; 4(A2) FOR GLITCH!!
+
+	MOVE.W	(A5,D3.W),10(A1)		; FX 1
+	MOVE.W	(A5,D3.W),10(A2)		; 4(A2) FOR GLITCH!!
+	RTS
+
+__BLOCK_END:
+	; 0: EMPTY_BEGIN
+	MOVEM.L D0-A6,-(SP)
+	JSR P61_End
+	MOVEM.L (SP)+,D0-A6
+	RTS
 
 ;********** Fastmem Data **********
 AUDIOCHLEVEL0:	DC.W 0
@@ -368,16 +444,20 @@ FRAMESINDEX:	DC.W SCROLLFACTOR
 DrawBuffer:	DC.L KONEYBG	; pointers to buffers to be swapped
 ViewBuffer:	DC.L KONEYBG
 
-COL_TAB_PURPLE:	DC.W $0101,$0101
-		DC.W $0202,$0202
-		DC.W $0212,$0212
-		DC.W $0303,$0303
-		DC.W $0313,$0313
-		DC.W $0404,$0404
-		DC.W $0414,$0414
-		DC.W $0515,$0515
-		DC.W $0606,$0606
-		DC.W $0616,$0616
+COL_TAB_PURPLE:	DC.W $0101
+		DC.W $0202
+		DC.W $0303
+		DC.W $0313
+		DC.W $0404
+		DC.W $0414
+		DC.W $0505
+		DC.W $0515
+		DC.W $0606
+		DC.W $0616
+		DC.W $0717	; NEW RANGE
+		DC.W $0818
+		DC.W $0919
+		DC.W $0A1A
 
 COL_TAB_WHITE:	DC.W $0556,$0666
 		DC.W $0667,$0777
@@ -401,11 +481,28 @@ COL_TAB_BLACK:	DC.W $0CCC,$0CCB
 		DC.W $0444,$0333
 		DC.W $0222,$0111
 
+COL_TAB_GREY:	DC.W $0AAC,$0AAC
+		DC.W $0AAC,$0AAC
+		DC.W $0AAC,$0AAC
+		DC.W $0AAC,$0AAA
+		DC.W $0AAA,$0AAB
+		DC.W $0BBB,$0BBC
+		DC.W $0CCC,$0CCD
+		DC.W $0DDD,$0DDE
+		DC.W $0EEE,$0EEF
+		DC.W $0EEF,$0FFF
+
+TIMELINE:		DC.L __BLOCK_0,__BLOCK_0	; 0 0: 
+		DC.L __BLOCK_1,__BLOCK_1	; 2 1: a_1
+		DC.L __BLOCK_2,__BLOCK_2	; 5 3: clsdhat
+		DC.L __BLOCK_3,__BLOCK_3	; 7 4: +Rulante
+		DC.L __BLOCK_END
+
 ;**************************************************************
 	SECTION "ChipData",DATA_C	;declared data that must be in chipmem
 ;**************************************************************
 
-MODULE:	INCBIN "take_em_in.P61"	; code $9100
+MODULE:	INCBIN "take_em_in_V3.P61"	; code $9100
 
 SPRITES:	INCLUDE "sprite_KONEY.s"
 
@@ -454,7 +551,7 @@ TEXT:	DC.B "                "
 	EVEN
 _TEXT:
 
-KONEYBG:	INCBIN "klogo_hdV2.raw"
+KONEYBG:	INCBIN "klogo_hdV3.raw"
 
 COPPER1: INCLUDE "copperlist_common.i" _COPPER1:
 COPPER2: INCLUDE "copperlist_common.i" _COPPER2:
