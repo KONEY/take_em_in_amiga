@@ -141,7 +141,7 @@ oscillo	=0	;1 to get a sample window (ptr, size) to read and display for
 quietstart=0	;attempt to avoid the very first click in some modules
 		;IMPORTANT: see ;@@ note about chipmem dc.w buffer.
 
-use1Fx	=1	;Optional extra effect-sync trigger (*). If your module is free
+use1Fx	=0	;Optional extra effect-sync trigger (*). If your module is free
 		;from E commands, and you add E8x to sync stuff, this will 
 		;change the usecode to include a whole code block for all E 
 		;commands. You can avoid this by only using 1Fx. (You can 

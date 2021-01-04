@@ -64,6 +64,7 @@ Demo:	;a4=VBR, a6=Custom Registers Base addr
 
 	; #### POINT COPPERLISTS
 	BSR.W	__POINT_COPPERLISTS
+	MOVE.W	#$0515,$DFF190	; POKE "K" WITH CPU
 	; #### POINT COPPERLISTS
 
 ;********************  main loop *********************
@@ -289,30 +290,12 @@ __SET_PT_VISUALS:
 	ifne visuctrs
 	MOVEM.L D0-A6,-(SP)
 
-	; ## COMMANDS 80x TRIGGERED EVENTS ##
-	MOVE.W	P61_1F,D2		; 1Fx
-	CMPI.W	#4,D2		; 1F4 - INVERT DIRECTION CH 3
-	BNE.S	.keepDir0
-
-	MOVE.W	#0,P61_1F		; RESET FX
-	.keepDir0:
-	MOVE.W	P61_E8,D2		; 80x
-	CMPI.W	#4,D2		; 804 - INVERT DIRECTION CH 3
-	BNE.S	.keepDir3
-
-	MOVE.W	#0,P61_E8	; RESET FX
-	.keepDir3:
-	MOVE.W	P61_E8,D2		; 80x
-	CMPI.W	#1,D2		; 804 - INVERT DIRECTION CH 3
-	BNE.S	.keepDir1
-
-	MOVE.W	#0,P61_E8	; RESET FX
-	.keepDir1:
-	; ## COMMANDS 80x TRIGGERED EVENTS ##
+	LEA	COPPER1\.ColPokes,A1
+	LEA	COPPER2\.ColPokes,A2
 
 	; BASS
 	LEA	P61_visuctr0(PC),A0 ; which channel? 0-3
-	MOVEQ	#20,D0		; maxvalue
+	MOVEQ	#19,D0		; maxvalue
 	SUB.W	(A0),D0		; -#frames/irqs since instrument trigger
 	BPL.S	.ok0		; below minvalue?
 	MOVEQ	#0,D0		; then set to minvalue
@@ -320,8 +303,8 @@ __SET_PT_VISUALS:
 	MOVE.B	D0,AUDIOCHLEVEL0
 	BCLR.L	#0,D0		; MAKES INDEX EVEN
 	LEA	COL_TAB_PURPLE,A3
-
-	MOVE.W	(A3,D0.W),$DFF190	; show rastertime left down to $12c
+	;CLR.W	$100		; DEBUG | w 0 100 2
+	MOVE.W	(A3,D0.W),$DFF190	; POKE "K" WITH CPU
 
 	;MOVE.W	#$0404,2(A1)	; FX 1
 	;MOVE.W	#$0525,2(A2)	; 4(A2) FOR GLITCH!! 
@@ -330,38 +313,44 @@ __SET_PT_VISUALS:
 
 	; KICK
 	LEA	P61_visuctr1(PC),A0 ; which channel? 0-3
-	MOVEQ	#8,D0		; maxvalue
+	MOVEQ	#19,D0		; maxvalue
 	SUB.W	(A0),D0		; -#frames/irqs since instrument trigger
 	BPL.S	.ok1		; below minvalue?
 	MOVEQ	#0,D0		; then set to minvalue
 	.ok1:
 	MOVE.B	D0,AUDIOCHLEVEL1
-	;MULU.W	#$2,D0		; start from a darker shade
-	;MOVE.L	D0,D3
-	;ROL.L	#$4,D3		; expand bits to green
-	;ADD.L	D3,D0
-	;ROL.L	#$4,D3
-	;ADD.L	D3,D0		; expand bits to red
+	BCLR.L	#0,D0		; MAKES INDEX EVEN
+	LEA	COL_TAB_WHITE,A3
+
+	MOVE.W	(A3,D0.W),2(A1)	; FX 1
+	MOVE.W	(A3,D0.W),2(A2)	; 4(A2) FOR GLITCH!!
 	_ok1:
 
 	; HATZ
 	LEA	P61_visuctr2(PC),A0 ; which channel? 0-3
-	MOVEQ	#15,D0		; maxvalue
+	MOVEQ	#19,D0		; maxvalue
 	SUB.W	(A0),D0		; -#frames/irqs since instrument trigger
 	BPL.S	.ok2		; below minvalue?
 	MOVEQ	#0,D0		; then set to minvalue
 	.ok2:
 	MOVE.B	D0,AUDIOCHLEVEL2
+	BCLR.L	#0,D0		; MAKES INDEX EVEN
+	LEA	COL_TAB_WHITE,A3
+	MOVE.W	(A3,D0.W),14(A1)	; 4(A2) FOR GLITCH!!
+	MOVE.W	(A3,D0.W),14(A2)	; 4(A2) FOR GLITCH!!
 	_ok2:
 
 	; DRUMZ
 	LEA	P61_visuctr3(PC),A0 ; which channel? 0-3
-	MOVEQ	#15,D0		; maxvalue
+	MOVEQ	#19,D0		; maxvalue
 	SUB.W	(A0),D0		; -#frames/irqs since instrument trigger
 	BPL.S	.ok3		; below minvalue?
 	MOVEQ	#0,D0		; then set to minvalue
 	.ok3:
 	MOVE.B	D0,AUDIOCHLEVEL3
+	BCLR.L	#0,D0		; MAKES INDEX EVEN
+	LEA	COL_TAB_BLACK,A3
+	MOVE.W	(A3,D0.W),22(A2)	; 4(A2) FOR GLITCH!!
 	_ok3:
 
 	MOVEM.L (SP)+,D0-A6
@@ -392,7 +381,28 @@ COL_TAB_PURPLE:	DC.W $0101,$0101
 		DC.W $0515,$0515
 		DC.W $0606,$0606
 		DC.W $0616,$0616
-COL_INDEX_PURPLE:	DC.W 0
+
+COL_TAB_WHITE:	DC.W $0556,$0666
+		DC.W $0667,$0777
+		DC.W $0778,$0888
+		DC.W $0889,$0999
+		DC.W $099A,$0AAA
+		DC.W $0AAB,$0BBB
+		DC.W $0BBC,$0CCC
+		DC.W $0CCD,$0DDD
+		DC.W $0DDE,$0EEE
+		DC.W $0EEF,$0FFF
+
+COL_TAB_BLACK:	DC.W $0CCC,$0CCC
+		DC.W $0BBC,$0BBB
+		DC.W $0AAB,$0AAA
+		DC.W $099A,$0999
+		DC.W $0889,$0888
+		DC.W $0778,$0777
+		DC.W $0667,$0666
+		DC.W $0556,$0555
+		DC.W $0445,$0444
+		DC.W $0334,$0333
 
 ;**************************************************************
 	SECTION "ChipData",DATA_C	;declared data that must be in chipmem
@@ -415,7 +425,7 @@ TEXT:	DC.B "                "
 	DC.B "LATER I HAD TO SELL THE MOST ICONIC DRUMMACHINE EVER SO THIS IS "
 	DC.B "QUITE A SOUVENIR FOR ME... "
 	DC.B "THIS TRACK WAS NEVER PUBLISHED BEFORE BUT IT FITTED WERY WELL WITH "
-	DC.B "THE HIRES LACED SCREEN VISUALS I HAD IN MIND ! THIS TIME BUT I HAVE 
+	DC.B "THE HIRES LACED SCREEN VISUALS I HAD IN MIND ! THIS TIME BUT I HAVE "
 	DC.B "BEEN TESTING HOW TO WORK IN HD ! "
 	DC.B "NOT TOO COMPLICATED BUT FOR SURE NOW I SEE WHY THERE ARE NOT SO " 
 	DC.B "MANY HIRES LACED RELEASES OUT ! AS MENTIONED NOT MANY ANIMATIONS "
