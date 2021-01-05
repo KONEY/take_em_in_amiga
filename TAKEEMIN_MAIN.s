@@ -1,4 +1,4 @@
-;*** HD + MUSIC AND DOUBLE COPPERLIST
+;*** TONY MANERO EFFECT!!
 ;*** MiniStartup by Photon ***
 	INCDIR	"NAS:AMIGA/CODE/take_em_in_amiga/"
 	SECTION	"Code",CODE
@@ -7,18 +7,18 @@
 	INCLUDE	"PT12_OPTIONS.i"
 	INCLUDE	"P6112-Play-stripped.i"
 ;********** Constants **********
-w=640		; screen width, height, depth
+w=640			; screen width, height, depth
 h=512
-bpls=4		; handy values:
-bpl=w/16*2	; byte-width of 1 bitplane line (80)
-bwid=bpls*bpl	; byte-width of 1 pixel line (all bpls)
+bpls=4			; handy values:
+bpl=w/16*2		; byte-width of 1 bitplane line (80)
+bwid=bpls*bpl		; byte-width of 1 pixel line (all bpls)
 ;*************
-MODSTART_POS=0	; start music at position # !! MUST BE EVEN FOR 16BIT
+MODSTART_POS=0		; start music at position # !! MUST BE EVEN FOR 16BIT
 SCROLLFACTOR=8
 ;*************
 
 ;********** Demo **********	; Demo-specific non-startup code below.
-Demo:	;a4=VBR, a6=Custom Registers Base addr
+Demo:				; a4=VBR, a6=Custom Registers Base addr
 	;*--- init ---*
 	MOVE.L	#VBint,$6C(A4)
 	MOVE.W	#%1110000000100000,INTENA
@@ -314,6 +314,7 @@ __SET_PT_VISUALS:
 	BPL.S	.ok0			; below minvalue?
 	MOVEQ	#0,D0			; then set to minvalue
 	.ok0:
+	MOVE.B	D0,AUDIOCHLEVEL0
 	BCLR.L	#0,D0			; MAKES INDEX EVEN
 	_ok0:
 
@@ -324,6 +325,7 @@ __SET_PT_VISUALS:
 	BPL.S	.ok1			; below minvalue?
 	MOVEQ	#0,D1			; then set to minvalue
 	.ok1:
+	MOVE.B	D1,AUDIOCHLEVEL1
 	BCLR.L	#0,D1			; MAKES INDEX EVEN
 	_ok1:
 
@@ -334,6 +336,7 @@ __SET_PT_VISUALS:
 	BPL.S	.ok2			; below minvalue?
 	MOVEQ	#0,D2			; then set to minvalue
 	.ok2:
+	MOVE.B	D2,AUDIOCHLEVEL2
 	BCLR.L	#0,D2			; MAKES INDEX EVEN
 	_ok2:
 
@@ -344,6 +347,7 @@ __SET_PT_VISUALS:
 	BPL.S	.ok3			; below minvalue?
 	MOVEQ	#0,D3			; then set to minvalue
 	.ok3:
+	MOVE.B	D3,AUDIOCHLEVEL3
 	BCLR.L	#0,D3			; MAKES INDEX EVEN
 	_ok3:
 
@@ -455,6 +459,7 @@ __BLOCK_5:
 	MOVE.W	(A5,D1.W),22(A1)		; FX 1
 	MOVE.W	(A5,D1.W),22(A2)		; 4(A2) FOR GLITCH!!
 
+	ADDQ.W	#8,A0			; CHANGE COLOR
 	MOVE.W	(A0,D3.W),18(A1)		; FX 1
 	MOVE.W	(A0,D3.W),18(A2)		; 4(A2) FOR GLITCH!!
 	RTS
@@ -466,25 +471,26 @@ __BLOCK_6:
 	MOVE.W	(A3,D0.W),$DFF190		; POKE "K" WITH CPU
 
 	MOVE.W	(A5,D2.W),2(A1)		; 4(A2) FOR GLITCH!!
-	MOVE.W	(A4,D2.W),2(A2)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A5,D2.W),2(A2)		; 4(A2) FOR GLITCH!!
 
 	MOVE.W	(A4,D1.W),6(A1)		; FX 1
 	MOVE.W	(A4,D1.W),6(A2)		; 4(A2) FOR GLITCH!!
 
-	MOVE.W	(A4,D2.W),10(A1)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A0,D2.W),10(A1)		; 4(A2) FOR GLITCH!!
 	MOVE.W	(A0,D2.W),10(A2)		; 4(A2) FOR GLITCH!!
 
 	MOVE.W	(A5,D1.W),14(A1)		; FX 1
 	MOVE.W	(A5,D1.W),14(A2)		; 4(A2) FOR GLITCH!!
 
 	MOVE.W	(A0,D2.W),18(A1)		; 4(A2) FOR GLITCH!!
-	MOVE.W	(A5,D2.W),18(A2)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A0,D2.W),18(A2)		; 4(A2) FOR GLITCH!!
 
+	ADDQ.W	#8,A0			; CHANGE COLOR
 	MOVE.W	(A0,D3.W),22(A2)		; 4(A2) FOR GLITCH!!
 	MOVE.W	(A0,D3.W),22(A1)		; 4(A2) FOR GLITCH!!
 
-	MOVE.W	(A4,D3.W),26(A1)		; FX 1
-	MOVE.W	(A4,D1.W),26(A2)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A4,D0.W),26(A1)		; FX 1
+	MOVE.W	(A4,D0.W),26(A2)		; 4(A2) FOR GLITCH!!
 
 	RTS
 
@@ -495,9 +501,9 @@ __BLOCK_7:
 	MOVE.W	(A3,D0.W),$DFF190		; POKE "K" WITH CPU
 
 	MOVE.W	(A5,D1.W),2(A1)		; 4(A2) FOR GLITCH!!
-	MOVE.W	(A4,D1.W),2(A2)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A5,D1.W),2(A2)		; 4(A2) FOR GLITCH!!
 
-	MOVE.W	(A0,D2.W),6(A1)		; FX 1
+	MOVE.W	(A4,D2.W),6(A1)		; FX 1
 	MOVE.W	(A4,D3.W),6(A2)		; 4(A2) FOR GLITCH!!
 
 	MOVE.W	(A0,D3.W),10(A1)		; 4(A2) FOR GLITCH!!
@@ -506,7 +512,8 @@ __BLOCK_7:
 	MOVE.W	(A4,D1.W),14(A1)		; FX 1
 	MOVE.W	(A4,D1.W),14(A2)		; 4(A2) FOR GLITCH!!
 
-	MOVE.W	(A4,D2.W),18(A1)		; 4(A2) FOR GLITCH!!
+	ADDQ.W	#8,A0			; CHANGE COLOR
+	MOVE.W	(A0,D2.W),18(A1)		; 4(A2) FOR GLITCH!!
 	MOVE.W	(A0,D2.W),18(A2)		; 4(A2) FOR GLITCH!!
 
 	MOVE.W	(A5,D3.W),22(A2)		; 4(A2) FOR GLITCH!!
@@ -526,23 +533,25 @@ __BLOCK_8:
 	MOVE.W	(A0,D1.W),26(A1)		; 4(A2) FOR GLITCH!!
 	MOVE.W	(A0,D1.W),26(A2)		; 4(A2) FOR GLITCH!!
 
-	MOVE.W	(A5,D1.W),6(A1)		; FX 1
-	MOVE.W	(A5,D1.W),6(A2)		; 4(A2) FOR GLITCH!!
-
-	;MOVE.W	(A0,D2.W),10(A1)		; 4(A2) FOR GLITCH!!
-	MOVE.W	(A0,D2.W),10(A2)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A5,D3.W),6(A1)		; FX 1
+	MOVE.W	(A5,D3.W),6(A2)		; 4(A2) FOR GLITCH!!
 
 	MOVE.W	(A4,D1.W),14(A1)		; FX 1
-	;MOVE.W	(A5,D1.W),14(A2)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A4,D1.W),14(A2)		; 4(A2) FOR GLITCH!!
 
-	MOVE.W	(A0,D2.W),18(A1)		; 4(A2) FOR GLITCH!!
-	MOVE.W	(A0,D2.W),18(A2)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A0,D3.W),18(A1)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A0,D3.W),18(A2)		; 4(A2) FOR GLITCH!!
 
+	ADDQ.W	#8,A0			; CHANGE COLOR
 	MOVE.W	(A0,D2.W),22(A2)		; 4(A2) FOR GLITCH!!
-	;MOVE.W	(A0,D2.W),22(A1)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A0,D2.W),22(A1)		; 4(A2) FOR GLITCH!!
 
-	MOVE.W	(A4,D0.W),2(A1)		; FX 1
-	MOVE.W	(A4,D0.W),2(A2)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A4,D3.W),10(A1)		; FX 1
+	MOVE.W	(A4,D3.W),10(A2)		; 4(A2) FOR GLITCH!!
+
+	;MOVE.W	(A3,D0.W),2(A1)		; 4(A2) FOR GLITCH!!
+	;MOVE.W	(A3,D0.W),2(A2)		; 4(A2) FOR GLITCH!!
+
 	RTS
 
 __BLOCK_9:
@@ -551,58 +560,149 @@ __BLOCK_9:
 
 	MOVE.W	(A3,D0.W),$DFF190		; POKE "K" WITH CPU
 
+	MOVE.W	(A3,D3.W),2(A1)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A3,D2.W),2(A2)		; 4(A2) FOR GLITCH!!
+
 	MOVE.W	(A0,D1.W),26(A1)		; 4(A2) FOR GLITCH!!
 	MOVE.W	(A0,D1.W),26(A2)		; 4(A2) FOR GLITCH!!
+
+	ADDQ.W	#8,A0			; CHANGE COLOR
+	MOVE.W	(A0,D3.W),10(A1)		; FX 1
+	MOVE.W	(A0,D3.W),10(A2)		; 4(A2) FOR GLITCH!!
 
 	MOVE.W	P61_rowpos,D5
 	CMPI.W	#15,D5
 	BGE.S	.noFx
 	MOVE.W	(A4,D1.W),6(A1)		; FX 1
-	MOVE.W	(A0,D1.W),6(A2)		; 4(A2) FOR GLITCH!!
-
-	MOVE.W	(A5,D1.W),2(A1)		; 4(A2) FOR GLITCH!!
-	MOVE.W	(A4,D1.W),2(A2)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A5,D1.W),6(A2)		; 4(A2) FOR GLITCH!!
 
 	MOVE.W	(A3,D1.W),14(A1)		; FX 1
 	MOVE.W	(A3,D1.W),14(A2)		; 4(A2) FOR GLITCH!!
 
-	MOVE.W	(A4,D1.W),18(A1)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A0,D1.W),18(A1)		; 4(A2) FOR GLITCH!!
 	MOVE.W	(A4,D1.W),18(A2)		; 4(A2) FOR GLITCH!!
 
-	MOVE.W	(A2,D1.W),22(A2)		; 4(A2) FOR GLITCH!!
-	MOVE.W	(A5,D1.W),22(A1)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A3,D2.W),22(A2)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A5,D2.W),22(A1)		; 4(A2) FOR GLITCH!!
 	.noFx:
 	
-	MOVE.W	(A4,D3.W),10(A1)		; FX 1
-	MOVE.W	(A3,D3.W),10(A2)		; 4(A2) FOR GLITCH!!
 	RTS
 
 __BLOCK_A:
 	; 29: KASSONE!
 	BSR.W	__SET_PT_VISUALS
 
+	MOVE.W	(A5,D1.W),2(A1)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A5,D1.W),2(A2)		; 4(A2) FOR GLITCH!!
+
+	MOVE.W	(A0,D2.W),6(A1)		; FX 1
+	MOVE.W	(A0,D3.W),6(A2)		; 4(A2) FOR GLITCH!!
+
+	MOVE.W	(A5,D2.W),10(A1)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A5,D2.W),10(A2)		; 4(A2) FOR GLITCH!!
+
+	MOVE.W	(A0,D2.W),14(A1)		; FX 1
+	MOVE.W	(A0,D2.W),14(A2)		; 4(A2) FOR GLITCH!!
+
+	MOVE.W	(A5,D3.W),18(A1)		; FX 1
+	MOVE.W	(A5,D3.W),18(A2)		; 4(A2) FOR GLITCH!!
+
+	ADDQ.W	#8,A0			; CHANGE COLOR
+	MOVE.W	(A0,D0.W),22(A2)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A0,D0.W),22(A1)		; 4(A2) FOR GLITCH!!
+
+	MOVE.W	(A0,D3.W),26(A1)		; FX 1
+	MOVE.W	(A0,D3.W),26(A2)		; 4(A2) FOR GLITCH!!
+
+	MOVE.W	(A0,D3.W),30(A1)		; FX 1
+	MOVE.W	(A0,D3.W),30(A2)		; 4(A2) FOR GLITCH!!
+
+	; ## CHANGE TILE EVERY BEAT ##
+	MOVE.W	TILE_INDEX,D6
+	MOVE.B	AUDIOCHLEVEL3,D5
+	CMP.B	#15,D5
+	BNE.S	.dontUpdate
+	ADD.W	#1,D6
+	AND.W	#7,D6			; EVERY 7 RESET
+	MOVE.W	D6,TILE_INDEX
+	.dontUpdate:
+
+	ADDQ.W	#2,A1
+	ADDQ.W	#2,A2
+	LSL.W	#2,D6			; CALCULATES OFFSET (OPTIMIZED)
+	;CLR.W	$100			; DEBUG | w 0 100 2
+	ADD.W	D6,A1
+	ADD.W	D6,A2
+
+	MOVE.W	(A3,D3.W),(A1)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A3,D3.W),(A2)		; 4(A2) FOR GLITCH!!
+	; ## CHANGE TILE EVERY BEAT ##
+
+	ADDQ.W	#8,A3			; CHANGE COLOR
 	MOVE.W	(A3,D0.W),$DFF190		; POKE "K" WITH CPU
+
+	RTS
+
+__BLOCK_B:
+	; 29: KASSONE!
+	BSR.W	__SET_PT_VISUALS
 
 	MOVE.W	(A5,D1.W),2(A1)		; 4(A2) FOR GLITCH!!
 	MOVE.W	(A5,D1.W),2(A2)		; 4(A2) FOR GLITCH!!
 
-	MOVE.W	(A4,D2.W),6(A1)		; FX 1
-	MOVE.W	(A4,D3.W),6(A2)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A0,D2.W),6(A1)		; FX 1
+	MOVE.W	(A0,D3.W),6(A2)		; 4(A2) FOR GLITCH!!
 
-	MOVE.W	(A0,D2.W),10(A1)		; 4(A2) FOR GLITCH!!
-	MOVE.W	(A0,D2.W),10(A2)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A5,D2.W),10(A1)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A5,D2.W),10(A2)		; 4(A2) FOR GLITCH!!
 
-	MOVE.W	(A5,D2.W),14(A1)		; FX 1
-	MOVE.W	(A5,D2.W),14(A2)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A0,D2.W),14(A1)		; FX 1
+	MOVE.W	(A0,D2.W),14(A2)		; 4(A2) FOR GLITCH!!
 
-	MOVE.W	(A3,D2.W),18(A1)		; 4(A2) FOR GLITCH!!
-	MOVE.W	(A0,D2.W),18(A2)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A5,D3.W),18(A1)		; FX 1
+	MOVE.W	(A5,D3.W),18(A2)		; 4(A2) FOR GLITCH!!
 
-	MOVE.W	(A4,D0.W),22(A2)		; 4(A2) FOR GLITCH!!
-	MOVE.W	(A3,D0.W),22(A1)		; 4(A2) FOR GLITCH!!
+	ADDQ.W	#8,A0			; CHANGE COLOR
+	MOVE.W	(A0,D0.W),22(A2)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A0,D0.W),22(A1)		; 4(A2) FOR GLITCH!!
 
 	MOVE.W	(A0,D3.W),26(A1)		; FX 1
-	MOVE.W	(A4,D3.W),26(A2)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A0,D3.W),26(A2)		; 4(A2) FOR GLITCH!!
+
+	MOVE.W	(A4,D3.W),30(A1)		; FX 1
+	MOVE.W	(A4,D3.W),30(A2)		; 4(A2) FOR GLITCH!!
+
+	; ## CHANGE TILE EVERY BEAT ##
+	MOVE.B	AUDIOCHLEVEL3,D5
+	MOVE.W	P61_rowpos,D7
+	CMPI.W	#15,D7
+	BGE.S	.noFx
+	MOVE.B	AUDIOCHLEVEL2,D5
+	MOVE.W	D2,D3
+	.noFx:
+
+	MOVE.W	TILE_INDEX,D6
+
+	CMP.B	#15,D5
+	BNE.S	.dontUpdate
+	ADD.W	#1,D6
+	AND.W	#7,D6			; EVERY 7 RESET
+	MOVE.W	D6,TILE_INDEX
+	.dontUpdate:
+
+	ADDQ.W	#2,A1
+	ADDQ.W	#2,A2
+	LSL.W	#2,D6			; CALCULATES OFFSET (OPTIMIZED)
+	;CLR.W	$100			; DEBUG | w 0 100 2
+	ADD.W	D6,A1
+	ADD.W	D6,A2
+
+	MOVE.W	(A3,D3.W),(A1)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A3,D3.W),(A2)		; 4(A2) FOR GLITCH!!
+	; ## CHANGE TILE EVERY BEAT ##
+
+	ADDQ.W	#8,A3			; CHANGE COLOR
+	MOVE.W	(A3,D0.W),$DFF190		; POKE "K" WITH CPU
 
 	RTS
 
@@ -618,6 +718,7 @@ AUDIOCHLEVEL0:	DC.W 0
 AUDIOCHLEVEL1:	DC.W 0
 AUDIOCHLEVEL2:	DC.W 0
 AUDIOCHLEVEL3:	DC.W 0
+TILE_INDEX:	DC.W 0
 P61_LAST_POS:	DC.W MODSTART_POS
 P61_DUMMY_POS:	DC.W 0
 P61_FRAMECOUNT:	DC.W 0
@@ -652,6 +753,17 @@ COL_TAB_WHITE:	DC.W $0556,$0666
 		DC.W $0DDE,$0EEE
 		DC.W $0EEF,$0FFF
 
+COL_TAB_GREY:	DC.W $0AAC,$0AAC
+		DC.W $0AAC,$0AAC
+		DC.W $0AAC,$0AAC
+		DC.W $0AAC,$0AAA
+		DC.W $0AAA,$0AAB
+		DC.W $0BBB,$0BBC
+		;DC.W $0CCC,$0CCD
+		;DC.W $0DDD,$0DDE
+		;DC.W $0EEE,$0EEF
+		;DC.W $0EEF,$0FFF
+
 COL_TAB_BLACK:	DC.W $0CCC,$0CCB
 		DC.W $0BBC,$0BBB
 		DC.W $0AAB,$0AAA
@@ -663,33 +775,22 @@ COL_TAB_BLACK:	DC.W $0CCC,$0CCB
 		DC.W $0444,$0333
 		DC.W $0222,$0111
 
-COL_TAB_GREY:	DC.W $0AAC,$0AAC
-		DC.W $0AAC,$0AAC
-		DC.W $0AAC,$0AAC
-		DC.W $0AAC,$0AAA
-		DC.W $0AAA,$0AAB
-		DC.W $0BBB,$0BBC
-		DC.W $0CCC,$0CCD
-		DC.W $0DDD,$0DDE
-		DC.W $0EEE,$0EEF
-		DC.W $0EEF,$0FFF
-
-TIMELINE:		DC.L __BLOCK_0,__BLOCK_0	; 1 0:  
+TIMELINE:		DC.L __BLOCK_0,__BLOCK_0	; 1 0:
 		DC.L __BLOCK_1,__BLOCK_1	; 2 1: a_1
 		DC.L __BLOCK_2,__BLOCK_2	; 5 3: clsdhat
 		DC.L __BLOCK_3,__BLOCK_3	; 7 4: +Rulante
 		DC.L __BLOCK_4,__BLOCK_4	; 9 6: cambio - kick2
 		DC.L __BLOCK_2,__BLOCK_3	; 11 8: Kontinua2
-		DC.L __BLOCK_1,__BLOCK_5	; 13 10: Konti CAMBIO!
+		DC.L __BLOCK_5,__BLOCK_5	; 13 10: Konti CAMBIO!
 		DC.L __BLOCK_6,__BLOCK_6	; 15 29: Ferryman BatLev KASSONE!
 		DC.L __BLOCK_X,__BLOCK_X	; 17 11: Kuasi Levare
 		DC.L __BLOCK_7,__BLOCK_7	; 19 28: Ferryman BatLev
 		DC.L __BLOCK_X,__BLOCK_8	; 21 13: cambio2_2 senzakassa
 		DC.L __BLOCK_8,__BLOCK_9	; 23 14: Cambio2_3
-		DC.L __BLOCK_7,__BLOCK_7	; 25 15: LEVARE completo (claps)
-		DC.L __BLOCK_7,__BLOCK_X	; 27 16: LEVARE completo Cambio
+		DC.L __BLOCK_A,__BLOCK_A	; 25 15: LEVARE completo (claps)
+		DC.L __BLOCK_A,__BLOCK_A	; 27 16: LEVARE completo Cambio
 		DC.L __BLOCK_A,__BLOCK_A	; 29 17: COMPLETO2
-		DC.L __BLOCK_A,__BLOCK_A	; 31 18: completo2 cambio
+		DC.L __BLOCK_A,__BLOCK_B	; 31 18: completo2 cambio
 		DC.L __BLOCK_4,__BLOCK_4	; 33 20: SAle
 		DC.L __BLOCK_END
 
