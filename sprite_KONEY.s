@@ -1,7 +1,7 @@
 SPRT_K:	
 	DC.B	$37	; Posizione verticale di inizio sprite (da $2c a $f2)
 	SPRT_K_POS:
-	DC.B	$44	; Posizione orizzontale di inizio sprite (da $40 a $d8)
+	DC.B	$44	; Posizione orizzontale di inizio sprite $44
 	DC.B	$46	; $50+13=$5d	; posizione verticale di fine sprite
 	DC.B	$00
 	DC.W	$E00E,$E00E,$E00E,$E00E,$E00E,$E00E
@@ -13,7 +13,7 @@ SPRT_K:
 SPRT_O:	
 	DC.B	$37	; Posizione verticale di inizio sprite (da $2c a $f2)
 	SPRT_O_POS:
-	DC.B	$4D	; Posizione orizzontale di inizio sprite (da $40 a $d8)
+	DC.B	$44	; Posizione orizzontale di inizio sprite $4D
 	DC.B	$46	; $50+13=$5d	; posizione verticale di fine sprite
 	DC.B	$00
 	DC.W	$FFFE,$FFFE,$FFFE,$FFFE,$FFFE,$FFFE
@@ -25,7 +25,7 @@ SPRT_O:
 SPRT_N:	
 	DC.B	$37	; Posizione verticale di inizio sprite (da $2c a $f2)
 	SPRT_N_POS:
-	DC.B	$56	; Posizione orizzontale di inizio sprite (da $40 a $d8)
+	DC.B	$44	; Posizione orizzontale di inizio sprite $56
 	DC.B	$46	; $50+13=$5d	; posizione verticale di fine sprite
 	DC.B	$00
 	DC.W	$FFFE,$FFFE,$FFFE,$FFFE,$FFFE,$FFFE
@@ -37,7 +37,7 @@ SPRT_N:
 SPRT_E:	
 	DC.B	$37	; Posizione verticale di inizio sprite (da $2c a $f2)
 	SPRT_E_POS:
-	DC.B	$5F	; Posizione orizzontale di inizio sprite (da $40 a $d8)
+	DC.B	$44	; Posizione orizzontale di inizio sprite $5F
 	DC.B	$46	; $50+13=$5d	; posizione verticale di fine sprite
 	DC.B	$00
 	DC.W	$FFFE,$FFFE,$FFFE,$FFFE,$FFFE,$FFFE
@@ -49,7 +49,7 @@ SPRT_E:
 SPRT_Y:	
 	DC.B	$37	; Posizione verticale di inizio sprite (da $2c a $f2)
 	SPRT_Y_POS:
-	DC.B	$68	; Posizione orizzontale di inizio sprite (da $40 a $d8)
+	DC.B	$44	; Posizione orizzontale di inizio sprite $68
 	DC.B	$46	; $50+13=$5d	; posizione verticale di fine sprite
 	DC.B	$00
 	DC.W	$FC7E,$FC7E,$FC7E,$FC7E,$FC7E,$FC7E
