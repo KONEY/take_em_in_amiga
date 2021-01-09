@@ -43,7 +43,6 @@ v1.0 - AreXX script by www.KONEY.org 2020
 39 24: kassadritta+rullante_cambio
 40 25: FINALE!
 41 25: FINALE!
-
 42 25: FINALE!
 43 25: FINALE!
 44 26: fine_1

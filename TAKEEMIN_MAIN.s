@@ -13,7 +13,7 @@ bpls=4			; handy values:
 bpl=w/16*2		; byte-width of 1 bitplane line (80)
 bwid=bpls*bpl		; byte-width of 1 pixel line (all bpls)
 ;*************
-MODSTART_POS=39		; start music at position # !! MUST BE EVEN FOR 16BIT
+MODSTART_POS=24		; start music at position # !! MUST BE EVEN FOR 16BIT
 SCROLLFACTOR=8
 ;*************
 	;CLR.W	$100			; DEBUG | w 0 100 2
@@ -852,6 +852,10 @@ __BLOCK_E:
 
 __BLOCK_END:
 	; 0: EMPTY_BEGIN
+
+	BSR.W	__SET_PT_VISUALS
+
+	MOVE.W	12(A3),$DFF190		; POKE "K" WITH CPU
 	MOVEM.L D0-A6,-(SP)
 	JSR P61_End
 	MOVEM.L (SP)+,D0-A6
@@ -881,10 +885,10 @@ COL_TAB_PURPLE:	DC.W $0101
 		DC.W $0515
 		DC.W $0606
 		DC.W $0616
-		DC.W $0717	; NEW RANGE
-		DC.W $0818
-		DC.W $0919
-		DC.W $0A1A
+		DC.W $0608	; NEW RANGE
+		DC.W $070A
+		DC.W $070B
+		DC.W $070D
 
 COL_TAB_WHITE:	DC.W $0556,$0666
 		DC.W $0667,$0777
@@ -940,19 +944,9 @@ TIMELINE:		DC.L __BLOCK_0,__BLOCK_0	; 1 0:
 		DC.L __BLOCK_E,__BLOCK_E	; 37 22: KAssadritta+claps
 		DC.L __BLOCK_A,__BLOCK_A	; 39 24: kassadritta+rullante_cambio
 		DC.L __BLOCK_6,__BLOCK_6	; 41 25: FINALE!
-		DC.L __BLOCK_END
-
-;**************************************************************
-	SECTION "ChipData",DATA_C	;declared data that must be in chipmem
-;**************************************************************
-
-MODULE:	INCBIN "take_em_in_V3.P61"	; code $9100
-
-SPRITES:	INCLUDE "sprite_KONEY.s"
-
-FONT:	DC.L 0,0		; SPACE CHAR
-	INCBIN "cyber_font.raw",0
-	EVEN
+		DC.L __BLOCK_6,__BLOCK_6	; 43 25: FINALE!
+		DC.L __BLOCK_5,__BLOCK_3	; 45 27: Fine2
+		DC.L __BLOCK_END		; 46 30: FINE
 
 TEXT:	DC.B "                              "
 	DC.B "WELCOME TO ### TAKE-EM IN ### KONEY THIRD AMIGA INTRO RELEASE !! "
@@ -1006,7 +1000,16 @@ TEXT:	DC.B "                              "
 	EVEN
 _TEXT:
 
-KONEYBG:	INCBIN "klogo_hdV3.raw"
+;**************************************************************
+	SECTION "ChipData",DATA_C	;declared data that must be in chipmem
+;**************************************************************
+
+KONEYBG:	INCBIN "klogo_hdV5.raw"
+MODULE:	INCBIN "take_em_in_V3.P61"	; code $9100
+SPRITES:	INCLUDE "sprite_KONEY.s"
+FONT:	DC.L 0,0		; SPACE CHAR
+	INCBIN "cyber_font.raw",0
+	EVEN
 
 COPPER1: INCLUDE "copperlist_common.i" _COPPER1:
 COPPER2: INCLUDE "copperlist_common.i" _COPPER2:
