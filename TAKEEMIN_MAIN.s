@@ -4,6 +4,7 @@
 	SECTION	"Code",CODE
 	INCLUDE	"Blitter-Register-List.S"
 	INCLUDE	"PhotonsMiniWrapper1.04!.S"
+	INCLUDE	"cli_output.s"
 	INCLUDE	"PT12_OPTIONS.i"
 	INCLUDE	"P6112-Play-stripped.i"
 ;********** Constants **********
@@ -13,7 +14,7 @@ bpls=4			; handy values:
 bpl=w/16*2		; byte-width of 1 bitplane line (80)
 bwid=bpls*bpl		; byte-width of 1 pixel line (all bpls)
 ;*************
-MODSTART_POS=24		; start music at position # !! MUST BE EVEN FOR 16BIT
+MODSTART_POS=44		; start music at position # !! MUST BE EVEN FOR 16BIT
 SCROLLFACTOR=8
 ;*************
 	;CLR.W	$100			; DEBUG | w 0 100 2
@@ -125,9 +126,25 @@ MainLoop:
 	BNE.W	MainLoop		; then loop
 	;*--- exit ---*
 	;    ---  Call P61_End  ---
-	MOVEM.L D0-A6,-(SP)
-	JSR P61_End
-	MOVEM.L (SP)+,D0-A6
+	;CLR.W	$100		; DEBUG | w 0 100 2
+	; ## TRANSFORM SONGPOS INTO ASCII TXT  ##
+	ADDQ.W	#1,P61_LAST_POS
+	MOVE.W	P61_LAST_POS,D5
+	CMP.W	#$A,D5
+	BLO.S	.oneDigit
+	SUB	#$A,D5		; IF >9
+	.oneDigit:
+	OR.B	#48,D5		; POINT TO CHAR 0
+	MOVE.W	P61_LAST_POS,D6
+	LSR.W	#4,D6
+	OR.B	#48,D6		; POINT TO CHAR 0
+	LSL.W	#8,D6
+	OR.W	D6,D5
+	MOVE.W	D5,TXT_POS
+	; ## TRANSFORM SONGPOS INTO ASCII TXT  ##
+	MOVEM.L	D0-A6,-(SP)
+	JSR	P61_End
+	MOVEM.L	(SP)+,D0-A6
 	RTS
 ;********** Demo Routines **********
 
@@ -185,7 +202,7 @@ __SCROLL_SPRITE_COLUMN:
 	LEA	SPRT_SCROLL_2\.visible,A5
 	SUB.L	#4,A5
 	MOVE.L	A5,BLTDPTH		; CLONE TO SHADOW
-	MOVE.W	#266*3*64+1,BLTSIZE ; BLTSIZE (via al blitter !)
+	MOVE.W	#266*3*64+1,BLTSIZE	; BLTSIZE (via al blitter !)
 	
 	BSR	WaitBlitter
 	MOVE.W	#%0000100111110000,BLTCON0	; BLTCON0 (usa A+D); con shift di un pixel
@@ -194,7 +211,7 @@ __SCROLL_SPRITE_COLUMN:
 	SUB.L	#4,A4
 	MOVE.L	A4,BLTDPTH
 	;MOVE.W	#(272+14<<6)+%00010101,BLTSIZE ; BLTSIZE (via al blitter !)
-	MOVE.W	#266*3*64+1,BLTSIZE ; BLTSIZE (via al blitter !)
+	MOVE.W	#266*3*64+1,BLTSIZE	; BLTSIZE (via al blitter !)
 	; ## MAIN BLIT ####
 	
 	MOVEM.L	(SP)+,D0-A6	; FETCH FROM STACK
@@ -321,6 +338,50 @@ __SHUFFLE_TILES:
 	LSL.W	#2,D6			; CALCULATES OFFSET (OPTIMIZED)
 	ADD.W	D6,A1
 	ADD.W	D6,A2
+	RTS
+
+__HW_DISPLACE:
+	MOVEM.L	D0-D7/A0-A6,-(SP)	; SAVE TO STACK
+	CLR.L	D2
+	MOVE.W	$DFF006,D4	; for bug?
+	.waitVisibleRaster:
+	MOVE.W	$DFF006,D4
+	AND.W	#$FF00,D4	; read vertical beam
+	CMP.W	#$3700,D4	; 2C
+	BNE.S	.waitVisibleRaster
+
+	.waitNextRaster:
+	MOVE.W	$DFF006,D2
+	AND.W	#$FF00,D2	; read vertical beam
+	CMP.W	D4,D2
+	BEQ.S	.waitNextRaster
+
+	MOVE.W	D2,D4
+	MOVE.B	AUDIOCHLEVEL3,D5	; $dff00a $dff00b for mouse pos
+	;MOVE.B	$BFD800,D5
+	MOVE.W	P61_rowpos,D1
+	EOR.B	D1,D5
+	BCLR.L	#$04,D5		; ONLY UPPER PLANES
+	BCLR.L	#$05,D5		; ONLY UPPER PLANES
+	BCLR.L	#$06,D5		; ONLY UPPER PLANES
+	BCLR.L	#$07,D5		; ONLY UPPER PLANES
+	MOVE.W	D5,BPLCON1	; 19DEA68E GLITCHA
+
+	MOVE.W	$DFF004,D0	; Read vert most sig. bits
+	BTST	#0,D0
+	BEQ.S	.waitNextRaster
+
+	CMP.W	#$0A00,D2	; DONT DISPLACE TXT
+	BGE.S	.dontSkip		; DONT DISPLACE TXT
+	MOVE.W	#0,BPLCON1	; RESET REGISTER
+	
+	.dontSkip:
+	CMP.W	#$2F00,D2	; 12.032
+	BNE.S	.waitNextRaster
+
+	MOVE.W	#0,BPLCON1	; RESET REGISTER
+
+	MOVEM.L	(SP)+,D0-A6	; FETCH FROM STACK
 	RTS
 
 __SET_PT_VISUALS:
@@ -751,7 +812,6 @@ __BLOCK_B:
 	ADDQ.W	#2,A1
 	ADDQ.W	#2,A2
 	LSL.W	#2,D6			; CALCULATES OFFSET (OPTIMIZED)
-	;CLR.W	$100			; DEBUG | w 0 100 2
 	ADD.W	D6,A1
 	ADD.W	D6,A2
 
@@ -802,6 +862,9 @@ __BLOCK_C:
 	ADDQ.W	#4,A0			; CHANGE COLOR
 	MOVE.W	(A0,D3.W),26(A1)		; FX 1
 	MOVE.W	(A0,D3.W),26(A2)		; 4(A2) FOR GLITCH!!
+
+	BSR.W	__HW_DISPLACE		; FOR CRASH
+
 	.noFx:
 
 	RTS
@@ -886,9 +949,9 @@ COL_TAB_PURPLE:	DC.W $0101
 		DC.W $0606
 		DC.W $0616
 		DC.W $0608	; NEW RANGE
-		DC.W $070A
-		DC.W $070B
-		DC.W $070D
+		DC.W $071A
+		DC.W $072B
+		DC.W $072D
 
 COL_TAB_WHITE:	DC.W $0556,$0666
 		DC.W $0667,$0777
@@ -948,7 +1011,7 @@ TIMELINE:		DC.L __BLOCK_0,__BLOCK_0	; 1 0:
 		DC.L __BLOCK_5,__BLOCK_3	; 45 27: Fine2
 		DC.L __BLOCK_END		; 46 30: FINE
 
-TEXT:	DC.B "                              "
+TEXT:		DC.B "                              "
 	DC.B "WELCOME TO ### TAKE-EM IN ### KONEY THIRD AMIGA INTRO RELEASE !! "
 	DC.B "THIS TIME I AM USING AN OLD TECHNO TRACK FROM 1997 OR 1998... "
 	DC.B "IT IS FROM THE DETROIT TECHNO ERA SO 140 BPM IS THE STANDARD - "
@@ -1000,6 +1063,15 @@ TEXT:	DC.B "                              "
 	EVEN
 _TEXT:
 
+END_TEXT:	DC.B "THANKS FOR EXECUTING TAKE'EM IN BY KONEY!",10
+		DC.B "YOU REACHED BLOCK "
+		TXT_POS: DC.B "  "
+		DC.B " OF A SEQUENCE OF 46.",10
+		DC.B "VISIT WWW.KONEY.ORG FOR MORE TECHNO "
+		DC.B "AND HARDCORE AMIGA STUFF!",10
+END_TEXT_LEN:	DC.B 148
+		EVEN
+
 ;**************************************************************
 	SECTION "ChipData",DATA_C	;declared data that must be in chipmem
 ;**************************************************************
@@ -1007,7 +1079,7 @@ _TEXT:
 KONEYBG:	INCBIN "klogo_hdV5.raw"
 MODULE:	INCBIN "take_em_in_V3.P61"	; code $9100
 SPRITES:	INCLUDE "sprite_KONEY.s"
-FONT:	DC.L 0,0		; SPACE CHAR
+FONT:	DC.L 0,0			; SPACE CHAR
 	INCBIN "cyber_font.raw",0
 	EVEN
 
