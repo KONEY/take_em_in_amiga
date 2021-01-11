@@ -14,7 +14,7 @@ bpls=4			; handy values:
 bpl=w/16*2		; byte-width of 1 bitplane line (80)
 bwid=bpls*bpl		; byte-width of 1 pixel line (all bpls)
 ;*************
-MODSTART_POS=18		; start music at position # !! MUST BE EVEN FOR 16BIT
+MODSTART_POS=0		; start music at position # !! MUST BE EVEN FOR 16BIT
 SCROLLFACTOR=8
 ;*************
 	;CLR.W	$100			; DEBUG | w 0 100 2
@@ -1069,10 +1069,10 @@ _TEXT:
 END_TEXT:	DC.B "THANKS FOR EXECUTING TAKE'EM IN BY KONEY!",10
 		DC.B "YOU REACHED BLOCK "
 		TXT_POS: DC.B "  "
-		DC.B " OF A SEQUENCE OF 46.",10
+		DC.B " FROM A SEQUENCE OF 46.",10
 		DC.B "VISIT WWW.KONEY.ORG FOR MORE TECHNO "
 		DC.B "AND HARDCORE AMIGA STUFF!",10
-END_TEXT_LEN:	DC.B 148
+END_TEXT_LEN:	DC.B 150
 		EVEN
 
 ;**************************************************************
