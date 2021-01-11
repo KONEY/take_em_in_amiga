@@ -14,7 +14,7 @@ bpls=4			; handy values:
 bpl=w/16*2		; byte-width of 1 bitplane line (80)
 bwid=bpls*bpl		; byte-width of 1 pixel line (all bpls)
 ;*************
-MODSTART_POS=44		; start music at position # !! MUST BE EVEN FOR 16BIT
+MODSTART_POS=18		; start music at position # !! MUST BE EVEN FOR 16BIT
 SCROLLFACTOR=8
 ;*************
 	;CLR.W	$100			; DEBUG | w 0 100 2
@@ -110,7 +110,7 @@ MainLoop:
 	; ## SONG POS RESETS ##
 
 	SONG_BLOCKS_EVENTS:
-	;* FOR TIMED EVENTS ON BLOCK ****
+	; ## FOR TIMED EVENTS ON BLOCKS ##
 	MOVE.W	P61_LAST_POS,D5
 	LEA	TIMELINE,A3
 	LSL.W	#2,D5		; CALCULATES OFFSET (OPTIMIZED)
@@ -125,20 +125,23 @@ MainLoop:
 	BTST	#2,$DFF016	; POTINP - RMB pressed?
 	BNE.W	MainLoop		; then loop
 	;*--- exit ---*
-	;    ---  Call P61_End  ---
-	;CLR.W	$100		; DEBUG | w 0 100 2
+	; --- Call P61_End ---
 	; ## TRANSFORM SONGPOS INTO ASCII TXT  ##
+	;CLR.W	$100		; DEBUG | w 0 100 2
 	ADDQ.W	#1,P61_LAST_POS
 	MOVE.W	P61_LAST_POS,D5
+	CLR.W	D6
 	CMP.W	#$A,D5
-	BLO.S	.oneDigit
-	SUB	#$A,D5		; IF >9
-	.oneDigit:
-	OR.B	#48,D5		; POINT TO CHAR 0
-	MOVE.W	P61_LAST_POS,D6
-	LSR.W	#4,D6
+	BLO.S	.oneDigit		; IF >9
+	MOVE.W	D5,D6		;
+	DIVU	#$A,D6
+	SWAP	D6
+	MOVE.W	D6,D5
+	SWAP	D6
 	OR.B	#48,D6		; POINT TO CHAR 0
 	LSL.W	#8,D6
+	.oneDigit:
+	OR.B	#48,D5		; POINT TO CHAR 0
 	OR.W	D6,D5
 	MOVE.W	D5,TXT_POS
 	; ## TRANSFORM SONGPOS INTO ASCII TXT  ##
