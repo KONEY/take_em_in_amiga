@@ -126,25 +126,7 @@ MainLoop:
 	BNE.W	MainLoop		; then loop
 	;*--- exit ---*
 	; --- Call P61_End ---
-	; ## TRANSFORM SONGPOS INTO ASCII TXT  ##
-	;CLR.W	$100		; DEBUG | w 0 100 2
-	ADDQ.W	#1,P61_LAST_POS
-	MOVE.W	P61_LAST_POS,D5
-	CLR.W	D6
-	CMP.W	#$A,D5
-	BLO.S	.oneDigit		; IF >9
-	MOVE.W	D5,D6		;
-	DIVU.W	#$A,D6
-	SWAP	D6
-	MOVE.W	D6,D5
-	SWAP	D6
-	OR.B	#48,D6		; POINT TO CHAR 0
-	LSL.W	#8,D6
-	.oneDigit:
-	OR.B	#48,D5		; POINT TO CHAR 0
-	OR.W	D6,D5
-	MOVE.W	D5,TXT_POS
-	; ## TRANSFORM SONGPOS INTO ASCII TXT  ##
+	BSR.W	__SONG_POS_2_ASCII
 	MOVEM.L	D0-A6,-(SP)
 	JSR	P61_End
 	MOVEM.L	(SP)+,D0-A6
@@ -395,6 +377,25 @@ __HW_DISPLACE:
 	MOVEM.L	(SP)+,D0-A6	; FETCH FROM STACK
 	RTS
 
+__SONG_POS_2_ASCII:
+	; ## TRANSFORM SONGPOS INTO ASCII TXT  ##
+	;CLR.W	$100		; DEBUG | w 0 100 2
+	MOVE.W	P61_LAST_POS,D5
+	ADDQ.W	#1,D5		; DONT SHOW 0 TO USER
+	CLR.L	D6
+	MOVE.W	D5,D6
+	DIVU.W	#$A,D6
+	SWAP	D6
+	MOVE.W	D6,D5
+	SWAP	D6
+	OR.B	#48,D6		; POINT TO CHAR 0
+	LSL.W	#8,D6
+	OR.B	#48,D5		; POINT TO CHAR 0
+	OR.W	D6,D5
+	MOVE.W	D5,TXT_POS
+	RTS
+	; ## TRANSFORM SONGPOS INTO ASCII TXT  ##
+
 __SET_PT_VISUALS:
 	; ## MOD VISUALIZERS ##########
 	ifne visuctrs
@@ -463,7 +464,7 @@ __SET_PT_VISUALS:
 	RTS
 	; MOD VISUALIZERS *****
 
-__BLOCK_X:
+__BLK_X:
 	; 0: BEGIN
 	BSR.W	__SET_PT_VISUALS
 
@@ -479,7 +480,7 @@ __BLOCK_X:
 	MOVE.W	(A4,D3.W),22(A1)		; 4(A2) FOR GLITCH!!
 	RTS
 
-__BLOCK_0:
+__BLK_0:
 	; 0: BEGIN
 	BSR.W	__SET_PT_VISUALS
 
@@ -542,7 +543,7 @@ __BLOCK_0:
 	;MOVE.W	(A5,D1.W),22(A2)		; 4(A2) FOR GLITCH!!
 	RTS
 
-__BLOCK_1:
+__BLK_1:
 	; 0: BEGIN
 	BSR.W	__SET_PT_VISUALS
 
@@ -555,7 +556,7 @@ __BLOCK_1:
 	MOVE.W	(A5,D1.W),22(A2)		; 4(A2) FOR GLITCH!!
 	RTS
 
-__BLOCK_2:
+__BLK_2:
 	; 0: BEGIN
 	BSR.W	__SET_PT_VISUALS
 
@@ -571,7 +572,7 @@ __BLOCK_2:
 	MOVE.W	(A5,D2.W),14(A2)		; 4(A2) FOR GLITCH!!
 	RTS
 
-__BLOCK_3:
+__BLK_3:
 	; 0: BEGIN
 	BSR.W	__SET_PT_VISUALS
 
@@ -587,7 +588,7 @@ __BLOCK_3:
 	MOVE.W	(A5,D3.W),10(A2)		; 4(A2) FOR GLITCH!!
 	RTS
 
-__BLOCK_4:
+__BLK_4:
 	; 0: BEGIN
 	BSR.W	__SET_PT_VISUALS
 
@@ -603,7 +604,7 @@ __BLOCK_4:
 	MOVE.W	(A5,D3.W),22(A2)		; 4(A2) FOR GLITCH!!
 	RTS
 
-__BLOCK_5:
+__BLK_5:
 	; 0: BEGIN
 	BSR.W	__SET_PT_VISUALS
 
@@ -617,7 +618,36 @@ __BLOCK_5:
 	MOVE.W	(A0,D3.W),18(A2)		; 4(A2) FOR GLITCH!!
 	RTS
 
-__BLOCK_6:
+__BLK_5_2:
+	; 0: BEGIN
+	BSR.W	__SET_PT_VISUALS
+
+	MOVE.W	(A3,D0.W),$DFF190		; POKE "K" WITH CPU
+
+	MOVE.W	(A5,D2.W),2(A1)		; FX 1
+	MOVE.W	(A5,D2.W),2(A2)		; 4(A2) FOR GLITCH!!
+
+	MOVE.W	(A5,D1.W),22(A1)		; FX 1
+	MOVE.W	(A5,D1.W),22(A2)		; 4(A2) FOR GLITCH!!
+
+	ADDQ.W	#8,A0			; CHANGE COLOR
+	MOVE.W	(A0,D3.W),18(A1)		; FX 1
+	MOVE.W	(A0,D3.W),18(A2)		; 4(A2) FOR GLITCH!!
+
+	; ## CHANGE TILE EVERY BEAT ##
+	MOVE.B	AUDIOCHLEVEL3,D5
+	MOVE.W	P61_rowpos,D7
+	CMPI.W	#15,D7
+	BGE.S	.noFx
+	MOVE.B	AUDIOCHLEVEL2,D5
+	BSR.W	__SHUFFLE_TILES
+	MOVE.W	(A0,D2.W),(A1)		; 4(A2) FOR GLITCH!!
+	MOVE.W	(A0,D2.W),(A2)		; 4(A2) FOR GLITCH!!
+	.noFx:
+
+	RTS
+
+__BLK_6:
 	; 29: KASSONE!
 	BSR.W	__SET_PT_VISUALS
 
@@ -648,7 +678,7 @@ __BLOCK_6:
 
 	RTS
 
-__BLOCK_7:
+__BLK_7:
 	; 29: KASSONE!
 	BSR.W	__SET_PT_VISUALS
 
@@ -678,7 +708,7 @@ __BLOCK_7:
 
 	RTS
 
-__BLOCK_8:
+__BLK_8:
 	; 0: BEGIN
 	BSR.W	__SET_PT_VISUALS
 
@@ -708,7 +738,7 @@ __BLOCK_8:
 
 	RTS
 
-__BLOCK_9:
+__BLK_9:
 	; 0: BEGIN
 	BSR.W	__SET_PT_VISUALS
 
@@ -742,7 +772,6 @@ __BLOCK_9:
 	; ## CHANGE TILE EVERY BEAT ##
 	MOVE.B	AUDIOCHLEVEL2,D5
 	BSR.W	__SHUFFLE_TILES
-	;ADDQ.W	#8,A3			; CHANGE COLOR
 	MOVE.W	(A4,D2.W),(A1)		; 4(A2) FOR GLITCH!!
 	MOVE.W	(A4,D2.W),(A2)		; 4(A2) FOR GLITCH!!
 	; ## CHANGE TILE EVERY BEAT ##
@@ -750,7 +779,7 @@ __BLOCK_9:
 	
 	RTS
 
-__BLOCK_A:
+__BLK_A:
 	; 29: KASSONE!
 	BSR.W	__SET_PT_VISUALS
 
@@ -788,7 +817,7 @@ __BLOCK_A:
 
 	RTS
 
-__BLOCK_B:
+__BLK_B:
 	; 29: KASSONE!
 	BSR.W	__SET_PT_VISUALS
 
@@ -824,25 +853,7 @@ __BLOCK_B:
 	ADDQ.W	#8,A3			; CHANGE COLOR
 	.noFx:
 
-	MOVE.W	TILE_INDEX,D6
-
-	CMP.B	#15,D5
-	BNE.S	.dontUpdate
-	ADD.W	#1,D6
-	;AND.W	#7,D6			; EVERY 7 RESET
-	CMPI.W	#7,D6
-	BNE.S	.dontReset
-	CLR	D6
-	.dontReset:
-	MOVE.W	D6,TILE_INDEX
-	.dontUpdate:
-
-	ADDQ.W	#2,A1
-	ADDQ.W	#2,A2
-	LSL.W	#2,D6			; CALCULATES OFFSET (OPTIMIZED)
-	ADD.W	D6,A1
-	ADD.W	D6,A2
-
+	BSR.W	__SHUFFLE_TILES
 	MOVE.W	(A3,D3.W),(A1)		; 4(A2) FOR GLITCH!!
 	MOVE.W	(A3,D3.W),(A2)		; 4(A2) FOR GLITCH!!
 	; ## CHANGE TILE EVERY BEAT ##
@@ -851,7 +862,7 @@ __BLOCK_B:
 
 	RTS
 
-__BLOCK_C:
+__BLK_C:
 	; 33 20: SAle
 	BSR.W	__SET_PT_VISUALS
 
@@ -874,7 +885,7 @@ __BLOCK_C:
 
 	RTS
 
-__BLOCK_D:
+__BLK_D:
 	; 33 20: SAle
 	BSR.W	__SET_PT_VISUALS
 
@@ -907,7 +918,7 @@ __BLOCK_D:
 
 	RTS
 
-__BLOCK_E:
+__BLK_E:
 	; 33 20: SAle
 	BSR.W	__SET_PT_VISUALS
 
@@ -943,7 +954,7 @@ __BLOCK_E:
 
 	RTS
 
-__BLOCK_F:
+__BLK_F:
 	; 29: KASSONE!
 	BSR.W	__SET_PT_VISUALS
 
@@ -984,7 +995,7 @@ __BLOCK_F:
 
 	RTS
 
-__BLOCK_END:
+__BLK_END:
 	; 0: EMPTY_BEGIN
 
 	BSR.W	__SET_PT_VISUALS
@@ -1058,30 +1069,30 @@ COL_TAB_BLACK:	DC.W $0CCC,$0CCB
 		DC.W $0444,$0333
 		DC.W $0222,$0111
 
-TIMELINE:		DC.L __BLOCK_0,__BLOCK_0	; 1 0:
-		DC.L __BLOCK_1,__BLOCK_1	; 2 1:	a_1
-		DC.L __BLOCK_2,__BLOCK_2	; 5 3:	clsdhat
-		DC.L __BLOCK_3,__BLOCK_3	; 7 4:	+Rulante
-		DC.L __BLOCK_4,__BLOCK_4	; 9 6:	cambio - kick2
-		DC.L __BLOCK_2,__BLOCK_3	; 11 8:	Kontinua2
-		DC.L __BLOCK_5,__BLOCK_5	; 13 10:	Konti CAMBIO!
-		DC.L __BLOCK_6,__BLOCK_6	; 15 29:	Ferryman BatLev KASSONE!
-		DC.L __BLOCK_X,__BLOCK_X	; 17 11:	Kuasi Levare
-		DC.L __BLOCK_7,__BLOCK_7	; 19 28:	Ferryman BatLev
-		DC.L __BLOCK_X,__BLOCK_8	; 21 13:	cambio2_2 senzakassa
-		DC.L __BLOCK_8,__BLOCK_9	; 23 14:	Cambio2_3
-		DC.L __BLOCK_A,__BLOCK_A	; 25 15:	LEVARE completo (claps)
-		DC.L __BLOCK_A,__BLOCK_A	; 27 16:	LEVARE completo Cambio
-		DC.L __BLOCK_A,__BLOCK_A	; 29 17:	COMPLETO2
-		DC.L __BLOCK_A,__BLOCK_B	; 31 18:	completo2 cambio
-		DC.L __BLOCK_C,__BLOCK_D	; 33 20:	SAle
-		DC.L __BLOCK_E,__BLOCK_E	; 35 21:	Kassadritta
-		DC.L __BLOCK_E,__BLOCK_E	; 37 22:	KAssadritta+claps
-		DC.L __BLOCK_A,__BLOCK_A	; 39 24:	kassadritta+rullante_cambio
-		DC.L __BLOCK_F,__BLOCK_F	; 41 25:	FINALE!
-		DC.L __BLOCK_F,__BLOCK_F	; 43 25:	FINALE!
-		DC.L __BLOCK_A,__BLOCK_E	; 45 27:	Fine2
-		DC.L __BLOCK_END		; 46 30:	FINE
+TIMELINE:		DC.L __BLK_0,__BLK_0	; 1 0:
+		DC.L __BLK_1,__BLK_1	; 2 1:	a_1
+		DC.L __BLK_2,__BLK_2	; 5 3:	clsdhat
+		DC.L __BLK_3,__BLK_3	; 7 4:	+Rulante
+		DC.L __BLK_4,__BLK_4	; 9 6:	cambio - kick2
+		DC.L __BLK_2,__BLK_3	; 11 8:	Kontinua2
+		DC.L __BLK_5,__BLK_5_2	; 13 10:	Konti CAMBIO!
+		DC.L __BLK_6,__BLK_6	; 15 29:	Ferryman BatLev KASSONE!
+		DC.L __BLK_X,__BLK_X	; 17 11:	Kuasi Levare
+		DC.L __BLK_7,__BLK_7	; 19 28:	Ferryman BatLev
+		DC.L __BLK_X,__BLK_8	; 21 13:	cambio2_2 senzakassa
+		DC.L __BLK_8,__BLK_9	; 23 14:	Cambio2_3
+		DC.L __BLK_A,__BLK_A	; 25 15:	LEVARE completo (claps)
+		DC.L __BLK_A,__BLK_A	; 27 16:	LEVARE completo Cambio
+		DC.L __BLK_A,__BLK_A	; 29 17:	COMPLETO2
+		DC.L __BLK_A,__BLK_B	; 31 18:	completo2 cambio
+		DC.L __BLK_C,__BLK_D	; 33 20:	SAle
+		DC.L __BLK_E,__BLK_E	; 35 21:	Kassadritta
+		DC.L __BLK_E,__BLK_E	; 37 22:	KAssadritta+claps
+		DC.L __BLK_A,__BLK_A	; 39 24:	kassadritta+rullante_cambio
+		DC.L __BLK_F,__BLK_F	; 41 25:	FINALE!
+		DC.L __BLK_F,__BLK_F	; 43 25:	FINALE!
+		DC.L __BLK_A,__BLK_E	; 45 27:	Fine2
+		DC.L __BLK_END		; 46 30:	FINE
 
 TEXT:		DC.B "                              "
 	DC.B "WELCOME TO ### TAKE-EM IN ### KONEY THIRD AMIGA INTRO RELEASE !! "
