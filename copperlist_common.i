@@ -8,10 +8,11 @@
 	DC.W $1FC,0		; Slow fetch mode, remove if AGA demo.
 	DC.W $8E,$2C81		; 238h display window top, left
 	DC.W $90,$2CC1		; and bottom, right.
-	DC.W $92,$3C		; Standard bitplane dma fetch start
-	DC.W $94,$D4		; and stop for standard screen.
+	DC.W $92,$003C		; Standard bitplane dma fetch start
+	DC.W $94,$00D4		; and stop for standard screen.
 
 	DC.W $106,$0C00		; (AGA compat. if any Dual Playf. mode)
+
 	DC.W $108,bpl		; bwid-bpl	;modulos
 	DC.W $10A,bpl		; bwid-bpl	;RISULTATO = 80 ?
 

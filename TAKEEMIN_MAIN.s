@@ -301,6 +301,7 @@ __POINT_COPPERLISTS:
 	MOVE.W	D0,(A0)
 
 	SWAP	D0
+	MOVE.W	#$8000,$DFF02A		; FROM EAB
 	MOVE.L	D0,COP1LC	; COP1LCH
 	RTS
 
@@ -1152,7 +1153,7 @@ END_TEXT_LEN:	DC.B 150
 	SECTION "ChipData",DATA_C	;declared data that must be in chipmem
 ;**************************************************************
 
-KONEYBG:	INCBIN "klogo_hdV6.raw"
+KONEYBG:	INCBIN "klogo_hdV7.raw"
 MODULE:	INCBIN "take_em_in_V3.P61"	; code $9100
 SPRITES:	INCLUDE "sprite_KONEY.s"
 FONT:	DC.L 0,0			; SPACE CHAR
