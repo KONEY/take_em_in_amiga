@@ -1153,7 +1153,7 @@ END_TEXT_LEN:	DC.B 150
 	SECTION "ChipData",DATA_C	;declared data that must be in chipmem
 ;**************************************************************
 
-KONEYBG:	INCBIN "klogo_hdV7.raw"
+KONEYBG:	INCBIN "klogo_hdV8.raw"
 MODULE:	INCBIN "take_em_in_V3.P61"	; code $9100
 SPRITES:	INCLUDE "sprite_KONEY.s"
 FONT:	DC.L 0,0			; SPACE CHAR
